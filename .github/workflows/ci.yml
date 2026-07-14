@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.13.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint, type-check, test, and build
+        run: pnpm check
+
+  infrastructure-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.13.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start standalone MongoDB
+        run: |
+          docker run -d --name hospital-mis-mongo -p 27017:27017 mongo:8.0.14 mongod --bind_ip_all
+          for attempt in {1..30}; do
+            if docker exec hospital-mis-mongo mongosh --quiet --eval 'quit(db.adminCommand({ping:1}).ok ? 0 : 1)'; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs hospital-mis-mongo
+          exit 1
+
+      - name: Run infrastructure readiness test
+        env:
+          RUN_INFRA_INTEGRATION_TESTS: 'true'
+          NODE_ENV: test
+          API_PORT: '4000'
+          MONGODB_URI: mongodb://127.0.0.1:27017/hospital_mis_ci
+          MONGODB_APP_NAME: hospital-mis-ci
+          MONGODB_SERVER_SELECTION_TIMEOUT_MS: '5000'
+          LOG_LEVEL: silent
+          CORS_ORIGINS: http://localhost:5173
+          SOCKET_IO_PATH: /socket.io
+          READINESS_TIMEOUT_MS: '3000'
+        run: pnpm test:integration

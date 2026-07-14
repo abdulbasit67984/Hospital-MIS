@@ -1,0 +1,127 @@
+import mongoose from 'mongoose';
+
+export type DatabaseConnectionOptions = {
+  uri: string;
+  appName: string;
+  serverSelectionTimeoutMs: number;
+};
+
+export type DependencyHealth = {
+  status: 'up';
+  latencyMs: number;
+};
+
+let connectionPromise:
+  | Promise<
+      typeof mongoose
+    >
+  | undefined;
+
+export async function connectDatabase(
+  options:
+    DatabaseConnectionOptions,
+): Promise<
+  typeof mongoose
+> {
+  if (
+    mongoose.connection
+      .readyState === 1
+  ) {
+    return mongoose;
+  }
+
+  const connectOptions = {
+    appName:
+      options.appName,
+
+    serverSelectionTimeoutMS:
+      options.serverSelectionTimeoutMs,
+
+    maxPoolSize:
+      20,
+
+    minPoolSize:
+      1,
+
+    retryWrites:
+      false,
+  } as mongoose.ConnectOptions;
+
+  connectionPromise ??=
+    mongoose.connect(
+      options.uri,
+      connectOptions,
+    );
+
+  try {
+    return await connectionPromise;
+  } catch (error) {
+    connectionPromise =
+      undefined;
+
+    throw error;
+  }
+}
+
+export async function disconnectDatabase():
+  Promise<void> {
+  connectionPromise =
+    undefined;
+
+  if (
+    mongoose.connection
+      .readyState !== 0
+  ) {
+    await mongoose.disconnect();
+  }
+}
+
+export async function pingDatabase():
+  Promise<DependencyHealth> {
+  const database =
+    mongoose.connection.db;
+
+  if (
+    mongoose.connection
+      .readyState !== 1 ||
+    database === undefined
+  ) {
+    throw new Error(
+      'MongoDB connection is not ready',
+    );
+  }
+
+  const startedAt =
+    Date.now();
+
+  await database.command({
+    ping: 1,
+  });
+
+  return {
+    status:
+      'up',
+
+    latencyMs:
+      Date.now() -
+      startedAt,
+  };
+}
+
+export function databaseReadyState():
+  number {
+  return mongoose.connection
+    .readyState;
+}
+
+export * from './catalog/collection-specs.js';
+export * from './catalog/enums.js';
+export * from './catalog/json-schema.js';
+
+export * from './models/auth.js';
+export * from './models/common.js';
+export * from './models/critical.js';
+export * from './models/registry.js';
+
+export * from './migrations/types.js';
+export * from './migrations/index.js';

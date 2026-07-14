@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+!.env.docker.example
+*.log
+.DS_Store
+.idea/
+.vscode/
+mongo-data/

@@ -1,0 +1,16 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/config" },
+    { "path": "packages/database" },
+    { "path": "packages/shared" },
+    { "path": "packages/testing" },
+    { "path": "packages/types" },
+    { "path": "packages/ui" },
+    { "path": "packages/validation" },
+    { "path": "apps/api" },
+    { "path": "apps/worker" },
+    { "path": "apps/web" },
+    { "path": "scripts" }
+  ]
+}
