@@ -3,6 +3,8 @@ packages:
   - packages/*
 
 allowBuilds:
+  '@scarf/scarf': set this to true or false
+  argon2: set this to true or false
   esbuild: true
 
 minimumReleaseAgeExclude:

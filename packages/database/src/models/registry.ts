@@ -8,6 +8,14 @@ import {
 } from '../catalog/collection-specs.js';
 
 import {
+  accessControlSchemas,
+} from './access-control.js';
+
+import {
+  auditSchemas,
+} from './audit.js';
+
+import {
   authSchemas,
 } from './auth.js';
 
@@ -28,7 +36,9 @@ function specFor(
         candidate.name === name,
     );
 
-  if (spec === undefined) {
+  if (
+    spec === undefined
+  ) {
     throw new Error(
       `Collection specification not found for ${name}`,
     );
@@ -40,6 +50,28 @@ function specFor(
 export function schemaForCollection(
   name: HospitalCollectionName,
 ): Schema {
+  const audit =
+    auditSchemas[
+      name as keyof typeof auditSchemas
+    ];
+
+  if (
+    audit !== undefined
+  ) {
+    return audit;
+  }
+
+  const accessControl =
+    accessControlSchemas[
+      name as keyof typeof accessControlSchemas
+    ];
+
+  if (
+    accessControl !== undefined
+  ) {
+    return accessControl;
+  }
+
   const auth =
     authSchemas[
       name as keyof typeof authSchemas
@@ -63,16 +95,13 @@ export function schemaForCollection(
   }
 
   const common =
-    specFor(name)
-      .facilityScoped
+    specFor(name).facilityScoped
       ? commonFields
       : Object.fromEntries(
           Object.entries(
             commonFields,
           ).filter(
-            ([
-              key,
-            ]) =>
+            ([key]) =>
               key !==
               'facilityId',
           ),
@@ -85,8 +114,7 @@ export function schemaForCollection(
 
         data: {
           type:
-            Schema.Types
-              .Mixed,
+            Schema.Types.Mixed,
 
           required:
             true,
@@ -109,8 +137,7 @@ export function schemaForCollection(
     );
 
   if (
-    specFor(name)
-      .facilityScoped
+    specFor(name).facilityScoped
   ) {
     schema.index({
       facilityId: 1,

@@ -7,6 +7,34 @@ import { Server as SocketIoServer } from 'socket.io';
 import { createApp } from './app.js';
 import { createReadinessProbe } from './infrastructure/readiness.js';
 
+import {
+  loadAuthConfig,
+} from '@hospital-mis/config';
+
+import {
+  nativeDatabase,
+} from '@hospital-mis/database';
+
+import {
+  createAuthenticationModule,
+} from './modules/auth/index.js';
+
+import {
+  createAuditModule,
+} from './modules/audit/index.js';
+
+import {
+  nativeDatabase,
+} from '@hospital-mis/database';
+
+import {
+  createOperationalInfrastructure,
+} from './infrastructure/operational-infrastructure.js';
+
+import {
+  registerOpenApi,
+} from './infrastructure/openapi.js';
+
 const config = loadApiConfig();
 const logger = createLogger('hospital-mis-api-bootstrap', config.logLevel);
 
@@ -16,8 +44,69 @@ await connectDatabase({
   serverSelectionTimeoutMs: config.mongodbServerSelectionTimeoutMs,
 });
 
+const authConfig =
+  loadAuthConfig();
+
+const authenticationModule =
+  createAuthenticationModule({
+    database:
+      nativeDatabase(),
+
+    apiConfig:
+      config,
+
+    authConfig,
+  });
+
+const auditModule =
+  createAuditModule(
+    nativeDatabase(),
+  );
+
+const operationalInfrastructure =
+  createOperationalInfrastructure({
+    database:
+      nativeDatabase(),
+
+    async publishEvent(event) {
+      socketServer.emit(
+        event.eventType,
+        {
+          eventId:
+            event.eventId,
+
+          aggregateType:
+            event.aggregateType,
+
+          aggregateId:
+            event.aggregateId,
+
+          payload:
+            event.payload,
+        },
+      );
+    },
+  });
+
 const readinessProbe = createReadinessProbe(config);
-const app = createApp({ config, readinessProbe });
+const app =
+  createApp({
+    config,
+    readinessProbe,
+
+    registerRoutes(
+      application,
+    ) {
+      registerOpenApi(
+        application,
+      );
+      
+      application.use(
+        '/api/v1/auth',
+        authenticationModule.router,
+      );
+    },
+  });
 const httpServer = createServer(app);
 
 const io = new SocketIoServer(httpServer, {

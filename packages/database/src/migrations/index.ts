@@ -10,18 +10,31 @@ import {
   authenticationFoundation,
 } from './002-authentication-foundation.js';
 
+import {
+  accessControlFoundation,
+} from './003-access-control-foundation.js';
+
+import {
+  auditFoundation,
+} from './004-audit-foundation.js';
+
+import {
+  operationalInfrastructure,
+} from './005-operational-infrastructure.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
+  accessControlFoundation,
+  auditFoundation,
+  operationalInfrastructure,
 ] as const;
 
 export async function runMigrations(
   database: Db,
 ): Promise<void> {
   await database
-    .collection(
-      '_migrations',
-    )
+    .collection('_migrations')
     .createIndex(
       {
         id: 1,
@@ -43,13 +56,10 @@ export async function runMigrations(
             id: 1,
           })
           .toArray()
-      ).map(
-        (record) =>
-          String(
-            record[
-              'id'
-            ],
-          ),
+      ).map((record) =>
+        String(
+          record['id'],
+        ),
       ),
     );
 

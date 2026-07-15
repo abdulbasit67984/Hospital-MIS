@@ -12,17 +12,13 @@ export type DependencyHealth = {
 };
 
 let connectionPromise:
-  | Promise<
-      typeof mongoose
-    >
+  | Promise<typeof mongoose>
   | undefined;
 
 export async function connectDatabase(
   options:
     DatabaseConnectionOptions,
-): Promise<
-  typeof mongoose
-> {
+): Promise<typeof mongoose> {
   if (
     mongoose.connection
       .readyState === 1
@@ -114,10 +110,44 @@ export function databaseReadyState():
     .readyState;
 }
 
+export function nativeDatabase() {
+  const database =
+    mongoose.connection.db;
+
+  if (
+    database === undefined
+  ) {
+    throw new Error(
+      'MongoDB connection is not ready',
+    );
+  }
+
+  return database;
+}
+
+export type {
+  Collection,
+  Db,
+  Filter,
+  IndexDescription,
+  UpdateFilter,
+} from 'mongodb';
+
+export {
+  Decimal128,
+  ObjectId,
+} from 'mongodb';
+
+export * from './atomic.js';
+export * from './decimal128.js';
+export * from './object-id.js';
+
 export * from './catalog/collection-specs.js';
 export * from './catalog/enums.js';
 export * from './catalog/json-schema.js';
 
+export * from './models/access-control.js';
+export * from './models/audit.js';
 export * from './models/auth.js';
 export * from './models/common.js';
 export * from './models/critical.js';
