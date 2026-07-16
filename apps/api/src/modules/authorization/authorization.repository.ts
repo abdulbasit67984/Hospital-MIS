@@ -8,29 +8,29 @@ import {
 } from '@hospital-mis/database';
 
 export type UserRoleDocument = {
-  facilityId: DatabaseObjectId;
+  facilityId?: DatabaseObjectId | null;
   userId: DatabaseObjectId;
   roleId: DatabaseObjectId;
-  active: boolean;
+  isActive: boolean;
+  expiresAt?: Date | null;
 };
 
 export type RoleDocument = {
   _id: DatabaseObjectId;
-  facilityId: DatabaseObjectId;
-  active: boolean;
+  facilityId?: DatabaseObjectId | null;
+  scope: 'GLOBAL' | 'FACILITY';
+  isActive: boolean;
 };
 
 export type RolePermissionDocument = {
-  facilityId: DatabaseObjectId;
   roleId: DatabaseObjectId;
-  permissionKey: string;
-  active: boolean;
+  permissionId: DatabaseObjectId;
 };
 
 export type PermissionDocument = {
-  facilityId: DatabaseObjectId;
-  key: string;
-  active: boolean;
+  _id: DatabaseObjectId;
+  code: string;
+  isActive: boolean;
 };
 
 export interface AuthorizationRepository {
@@ -47,25 +47,25 @@ export interface AuthorizationRepository {
 
 export class MongoAuthorizationRepository
 implements AuthorizationRepository {
-  constructor(
+  public constructor(
     private readonly database: Db,
   ) {}
 
-  async resolvePermissionKeys(
+  public async resolvePermissionKeys(
     facilityIdValue: string,
     userIdValue: string,
   ): Promise<readonly string[]> {
-    const facilityId =
-      toObjectId(
-        facilityIdValue,
-        'facilityId',
-      );
+    const facilityId = toObjectId(
+      facilityIdValue,
+      'facilityId',
+    );
 
-    const userId =
-      toObjectId(
-        userIdValue,
-        'userId',
-      );
+    const userId = toObjectId(
+      userIdValue,
+      'userId',
+    );
+
+    const now = new Date();
 
     const assignments =
       await this.database
@@ -73,9 +73,26 @@ implements AuthorizationRepository {
           'userRoles',
         )
         .find({
-          facilityId,
           userId,
-          active: true,
+          isActive: true,
+          $and: [
+            {
+              $or: [
+                { facilityId: null },
+                { facilityId },
+              ],
+            },
+            {
+              $or: [
+                { expiresAt: null },
+                {
+                  expiresAt: {
+                    $gt: now,
+                  },
+                },
+              ],
+            },
+          ],
         })
         .toArray();
 
@@ -95,13 +112,20 @@ implements AuthorizationRepository {
           'roles',
         )
         .find({
-          facilityId,
-
           _id: {
             $in: assignedRoleIds,
           },
-
-          active: true,
+          isActive: true,
+          $or: [
+            {
+              scope: 'GLOBAL',
+              facilityId: null,
+            },
+            {
+              scope: 'FACILITY',
+              facilityId,
+            },
+          ],
         })
         .toArray();
 
@@ -111,8 +135,7 @@ implements AuthorizationRepository {
 
     const activeRoleIds =
       activeRoles.map(
-        (role) =>
-          role._id,
+        (role) => role._id,
       );
 
     const rolePermissions =
@@ -121,29 +144,25 @@ implements AuthorizationRepository {
           'rolePermissions',
         )
         .find({
-          facilityId,
-
           roleId: {
             $in: activeRoleIds,
           },
-
-          active: true,
         })
         .toArray();
 
-    if (
-      rolePermissions.length === 0
-    ) {
+    if (rolePermissions.length === 0) {
       return [];
     }
 
-    const candidateKeys = [
-      ...new Set(
+    const permissionIds = [
+      ...new Map(
         rolePermissions.map(
-          (assignment) =>
-            assignment.permissionKey,
+          (assignment) => [
+            assignment.permissionId.toHexString(),
+            assignment.permissionId,
+          ],
         ),
-      ),
+      ).values(),
     ];
 
     const activePermissions =
@@ -152,13 +171,10 @@ implements AuthorizationRepository {
           'permissions',
         )
         .find({
-          facilityId,
-
-          key: {
-            $in: candidateKeys,
+          _id: {
+            $in: permissionIds,
           },
-
-          active: true,
+          isActive: true,
         })
         .toArray();
 
@@ -166,44 +182,36 @@ implements AuthorizationRepository {
       ...new Set(
         activePermissions.map(
           (permission) =>
-            permission.key,
+            permission.code,
         ),
       ),
-    ];
+    ].sort();
   }
 
-  async incrementUserPermissionVersion(
+  public async incrementUserPermissionVersion(
     facilityId: string,
     userId: string,
   ): Promise<boolean> {
+    void facilityId;
+
     const result =
       await this.database
         .collection('users')
         .updateOne(
           {
-            _id:
-              toObjectId(
-                userId,
-                'userId',
-              ),
-
-            facilityId:
-              toObjectId(
-                facilityId,
-                'facilityId',
-              ),
-
+            _id: toObjectId(
+              userId,
+              'userId',
+            ),
             status: {
               $ne: 'DISABLED',
             },
           },
-
           {
             $inc: {
               permissionVersion: 1,
               version: 1,
             },
-
             $currentDate: {
               updatedAt: true,
             },

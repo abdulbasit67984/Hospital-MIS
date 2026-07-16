@@ -5,11 +5,14 @@ import {
   objectId,
 } from './common.js';
 
-export const userStatuses = [
-  'ACTIVE',
-  'LOCKED',
-  'DISABLED',
-] as const;
+import {
+  UserModel,
+  identityUserStatusValues,
+  userSchema,
+} from './user.model.js';
+
+export const userStatuses =
+  identityUserStatusValues;
 
 export const sessionStatuses = [
   'ACTIVE',
@@ -25,162 +28,6 @@ export const refreshTokenStatuses = [
   'REUSED',
   'EXPIRED',
 ] as const;
-
-const userSchema = baseSchema(
-  {
-    publicId: {
-      type: String,
-      required: true,
-      immutable: true,
-      trim: true,
-    },
-
-    username: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    normalizedUsername: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    email: {
-      type: String,
-      trim: true,
-    },
-
-    normalizedEmail: {
-      type: String,
-      trim: true,
-    },
-
-    displayName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    passwordHash: {
-      type: String,
-      required: true,
-      select: false,
-    },
-
-    status: {
-      type: String,
-      enum: userStatuses,
-      required: true,
-      default: 'ACTIVE',
-    },
-
-    failedLoginCount: {
-      type: Number,
-      required: true,
-      default: 0,
-      min: 0,
-    },
-
-    lockedUntil: {
-      type: Date,
-    },
-
-    passwordChangedAt: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
-
-    lastLoginAt: {
-      type: Date,
-    },
-
-    tokenVersion: {
-      type: Number,
-      required: true,
-      default: 0,
-      min: 0,
-    },
-
-    permissionVersion: {
-      type: Number,
-      required: true,
-      default: 0,
-      min: 0,
-    },
-
-    staffId: {
-      type: objectId,
-    },
-
-    createdBy: {
-      type: objectId,
-    },
-
-    disabledAt: {
-      type: Date,
-    },
-
-    disabledBy: {
-      type: objectId,
-    },
-
-    disabledReason: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-    },
-  },
-
-  {
-    collection:
-      'users',
-  },
-);
-
-userSchema.index(
-  {
-    facilityId: 1,
-    publicId: 1,
-  },
-  {
-    unique: true,
-  },
-);
-
-userSchema.index(
-  {
-    facilityId: 1,
-    normalizedUsername: 1,
-  },
-  {
-    unique: true,
-  },
-);
-
-userSchema.index(
-  {
-    facilityId: 1,
-    normalizedEmail: 1,
-  },
-  {
-    unique: true,
-
-    partialFilterExpression: {
-      normalizedEmail: {
-        $type: 'string',
-      },
-    },
-  },
-);
-
-userSchema.index({
-  facilityId: 1,
-  status: 1,
-  displayName: 1,
-});
 
 const sessionSchema = baseSchema(
   {
@@ -257,7 +104,6 @@ const sessionSchema = baseSchema(
       required: true,
     },
   },
-
   {
     collection:
       'sessions',
@@ -342,9 +188,14 @@ const refreshTokenSchema =
 
       status: {
         type: String,
-        enum: refreshTokenStatuses,
-        required: true,
-        default: 'ACTIVE',
+        enum:
+          refreshTokenStatuses,
+
+        required:
+          true,
+
+        default:
+          'ACTIVE',
       },
 
       issuedAt: {
@@ -392,7 +243,6 @@ const refreshTokenSchema =
         required: true,
       },
     },
-
     {
       collection:
         'refreshTokens',
@@ -465,6 +315,13 @@ export function registerAuthModels(
     mongoose.Connection =
       mongoose.connection,
 ) {
+  if (
+    connection ===
+    mongoose.connection
+  ) {
+    void UserModel;
+  }
+
   return Object.fromEntries(
     Object.entries(
       authSchemas,

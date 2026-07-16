@@ -124,6 +124,34 @@ export const permissionKeys = [
   'audit.read',
   'audit.export',
 
+  /*
+   * Phase 4 identity and access-control permissions.
+   *
+   * These granular permissions are used by the identity routes. The broader
+   * legacy users.* and roles.* keys remain temporarily for compatibility
+   * with previously seeded installations.
+   */
+  'identity.permissions.read',
+
+  'identity.roles.read',
+  'identity.roles.create',
+  'identity.roles.update',
+  'identity.roles.deactivate',
+  'identity.roles.assign_permissions',
+
+  'identity.staff.read',
+  'identity.staff.create',
+  'identity.staff.update',
+  'identity.staff.change_status',
+
+  'identity.users.read',
+  'identity.users.create',
+  'identity.users.update',
+  'identity.users.change_status',
+  'identity.users.assign_roles',
+  'identity.users.reset_password',
+  'identity.users.revoke_sessions',
+
   'users.read',
   'users.manage',
   'users.sessions.revoke',
@@ -165,8 +193,10 @@ function humanizePermission(
   return key
     .replaceAll('.', ' ')
     .replaceAll('_', ' ')
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase(),
+    .replace(
+      /\b\w/g,
+      (letter) =>
+        letter.toUpperCase(),
     );
 }
 
@@ -176,11 +206,24 @@ function sensitivityFor(
   if (
     key.startsWith('audit.') ||
     key.startsWith('security.') ||
-    key === 'patients.read_sensitive' ||
-    key === 'inventory.view_cost' ||
-    key === 'billing.discount.approve' ||
-    key === 'billing.refund.process' ||
-    key === 'assistance.approve'
+    key ===
+      'patients.read_sensitive' ||
+    key ===
+      'inventory.view_cost' ||
+    key ===
+      'billing.discount.approve' ||
+    key ===
+      'billing.refund.process' ||
+    key ===
+      'assistance.approve' ||
+    key ===
+      'identity.roles.assign_permissions' ||
+    key ===
+      'identity.users.assign_roles' ||
+    key ===
+      'identity.users.reset_password' ||
+    key ===
+      'identity.users.revoke_sessions'
   ) {
     return 'HIGHLY_SENSITIVE';
   }
@@ -191,8 +234,13 @@ function sensitivityFor(
     key.startsWith('assistance.') ||
     key.startsWith('clinical_notes.') ||
     key.startsWith('encounters.') ||
-    key.startsWith('laboratory.results.') ||
-    key.startsWith('radiology.reports.')
+    key.startsWith(
+      'laboratory.results.',
+    ) ||
+    key.startsWith(
+      'radiology.reports.',
+    ) ||
+    key.startsWith('identity.')
   ) {
     return 'SENSITIVE';
   }
@@ -202,19 +250,33 @@ function sensitivityFor(
 
 export const permissionDefinitions:
   readonly PermissionDefinition[] =
-  permissionKeys.map((key) => ({
-    key,
+  permissionKeys.map(
+    (key) => ({
+      key,
 
-    module:
-      key.split('.')[0] ??
-      'unknown',
+      module:
+        key.startsWith(
+          'identity.',
+        )
+          ? 'identity'
+          : (
+              key.split(
+                '.',
+              )[0] ??
+              'unknown'
+            ),
 
-    description:
-      humanizePermission(key),
+      description:
+        humanizePermission(
+          key,
+        ),
 
-    sensitivity:
-      sensitivityFor(key),
-  }));
+      sensitivity:
+        sensitivityFor(
+          key,
+        ),
+    }),
+  );
 
 export function isPermissionKey(
   value: string,
@@ -227,7 +289,11 @@ export function isPermissionKey(
 export function requirePermissionKey(
   value: string,
 ): PermissionKey {
-  if (!isPermissionKey(value)) {
+  if (
+    !isPermissionKey(
+      value,
+    )
+  ) {
     throw new Error(
       `Unknown permission key: ${value}`,
     );

@@ -153,5 +153,12 @@ export * from './models/common.js';
 export * from './models/critical.js';
 export * from './models/registry.js';
 
+export * from './models/permission.model.js';
+export * from './models/role.model.js';
+export * from './models/role-permission.model.js';
+export * from './models/staff.model.js';
+export * from './models/user.model.js';
+export * from './models/user-role.model.js';
+
 export * from './migrations/types.js';
 export * from './migrations/index.js';

@@ -29,67 +29,62 @@ import {
 
 const seedEnvironmentSchema =
   z.object({
-    ADMIN_FACILITY_ID:
-      z
-        .string()
-        .regex(
-          /^[a-f\d]{24}$/i,
-        ),
+    ADMIN_FACILITY_ID: z
+      .string()
+      .regex(/^[a-f\d]{24}$/i),
 
-    ADMIN_USERNAME:
-      z
-        .string()
-        .trim()
-        .min(3)
-        .max(100)
-        .default(
-          'admin',
-        ),
+    ADMIN_USERNAME: z
+      .string()
+      .trim()
+      .min(3)
+      .max(80)
+      .default('admin'),
 
-    ADMIN_DISPLAY_NAME:
-      z
-        .string()
-        .trim()
-        .min(3)
-        .max(150)
-        .default(
-          'System Administrator',
-        ),
+    ADMIN_DISPLAY_NAME: z
+      .string()
+      .trim()
+      .min(3)
+      .max(260)
+      .default(
+        'System Administrator',
+      ),
 
-    ADMIN_PASSWORD:
-      z
-        .string()
-        .min(12)
-        .max(128),
+    ADMIN_PASSWORD: z
+      .string()
+      .min(12)
+      .max(128),
 
-    ADMIN_RESET_PASSWORD:
-      z
-        .enum([
-          'true',
-          'false',
-        ])
-        .default(
-          'false',
-        ),
+    ADMIN_RESET_PASSWORD: z
+      .enum([
+        'true',
+        'false',
+      ])
+      .default('false'),
   });
 
-type PermissionDocument = {
+type PermissionDocument = Record<string, unknown> & {
   _id: DatabaseObjectId;
-  facilityId: DatabaseObjectId;
-  key: string;
+  code: string;
 };
 
-type RoleDocument = {
+type RoleDocument = Record<string, unknown> & {
   _id: DatabaseObjectId;
-  facilityId: DatabaseObjectId;
-  normalizedCode: string;
+  facilityId?:
+    | DatabaseObjectId
+    | null;
+  scope: 'GLOBAL' | 'FACILITY';
+  code: string;
 };
 
-type UserDocument = {
+type UserDocument = Record<string, unknown> & {
   _id: DatabaseObjectId;
-  facilityId: DatabaseObjectId;
+  facilityId?:
+    | DatabaseObjectId
+    | null;
   normalizedUsername: string;
   version: number;
+  tokenVersion: number;
+  permissionVersion: number;
 };
 
 function normalize(
@@ -98,38 +93,26 @@ function normalize(
   return value
     .normalize('NFKC')
     .trim()
-    .toLowerCase();
-}
-
-function permissionPublicId(
-  key: string,
-): string {
-  return `PERM-${key
-    .toUpperCase()
-    .replaceAll('.', '-')
-    .replaceAll('_', '-')}`;
+    .toLocaleLowerCase(
+      'en-US',
+    );
 }
 
 async function main():
   Promise<void> {
   const apiConfig =
     loadApiConfig();
-
   const authConfig =
     loadAuthConfig();
-
-  const seedEnvironment =
+  const environment =
     seedEnvironmentSchema.parse(
       process.env,
     );
 
   await connectDatabase({
-    uri:
-      apiConfig.mongodbUri,
-
+    uri: apiConfig.mongodbUri,
     appName:
       'hospital-mis-admin-seed',
-
     serverSelectionTimeoutMs:
       apiConfig
         .mongodbServerSelectionTimeoutMs,
@@ -137,16 +120,14 @@ async function main():
 
   const database =
     nativeDatabase();
-
-  const now =
-    new Date();
-
-  const facilityId =
-    toObjectId(
-      seedEnvironment
-        .ADMIN_FACILITY_ID,
-
-      'ADMIN_FACILITY_ID',
+  const now = new Date();
+  const facilityId = toObjectId(
+    environment.ADMIN_FACILITY_ID,
+    'ADMIN_FACILITY_ID',
+  );
+  const normalizedUsername =
+    normalize(
+      environment.ADMIN_USERNAME,
     );
 
   const permissions =
@@ -154,66 +135,44 @@ async function main():
       'permissions',
     );
 
-  for (
-    const definition of
-    permissionDefinitions
+  if (
+    permissionDefinitions.length > 0
   ) {
-    await permissions.updateOne(
+    await permissions.bulkWrite(
+      permissionDefinitions.map(
+        (definition) => ({
+          updateOne: {
+            filter: {
+              code: definition.key,
+            },
+            update: {
+              $set: {
+                name:
+                  definition.description,
+                module:
+                  definition.module,
+                description:
+                  definition.description,
+                sensitivity:
+                  definition.sensitivity,
+                isSystem: true,
+                isActive: true,
+                updatedAt: now,
+              },
+              $setOnInsert: {
+                _id: createObjectId(),
+                code: definition.key,
+                schemaVersion: 1,
+                version: 0,
+                createdAt: now,
+              },
+            },
+            upsert: true,
+          },
+        }),
+      ),
       {
-        facilityId,
-        key:
-          definition.key,
-      },
-
-      {
-        $set: {
-          module:
-            definition.module,
-
-          description:
-            definition.description,
-
-          sensitivity:
-            definition.sensitivity,
-
-          source:
-            'SYSTEM',
-
-          active:
-            true,
-
-          updatedAt:
-            now,
-        },
-
-        $setOnInsert: {
-          _id:
-            createObjectId(),
-
-          facilityId,
-
-          publicId:
-            permissionPublicId(
-              definition.key,
-            ),
-
-          key:
-            definition.key,
-
-          schemaVersion:
-            1,
-
-          version:
-            0,
-
-          createdAt:
-            now,
-        },
-      },
-
-      {
-        upsert:
-          true,
+        ordered: true,
       },
     );
   }
@@ -222,75 +181,45 @@ async function main():
     database.collection<RoleDocument>(
       'roles',
     );
-
-  const normalizedRoleCode =
-    'system-administrator';
+  const roleCode =
+    'SYSTEM_ADMINISTRATOR';
 
   await roles.updateOne(
     {
-      facilityId,
-
-      normalizedCode:
-        normalizedRoleCode,
+      facilityId: null,
+      scope: 'GLOBAL',
+      code: roleCode,
     },
-
     {
       $set: {
-        code:
-          'SYSTEM_ADMINISTRATOR',
-
         name:
           'System Administrator',
-
         description:
-          'Full administrative access to the Hospital MIS',
-
-        systemRole:
-          true,
-
-        active:
-          true,
-
-        updatedAt:
-          now,
+          'Controlled full-system administration access for the Hospital MIS',
+        isSystem: true,
+        isActive: true,
+        updatedAt: now,
       },
-
       $setOnInsert: {
-        _id:
-          createObjectId(),
-
-        facilityId,
-
-        publicId:
-          'ROLE-SYSTEM-ADMIN',
-
-        normalizedCode:
-          normalizedRoleCode,
-
-        schemaVersion:
-          1,
-
-        version:
-          0,
-
-        createdAt:
-          now,
+        _id: createObjectId(),
+        facilityId: null,
+        scope: 'GLOBAL',
+        code: roleCode,
+        schemaVersion: 1,
+        version: 0,
+        createdAt: now,
       },
     },
-
     {
-      upsert:
-        true,
+      upsert: true,
     },
   );
 
-  const role =
-    await roles.findOne({
-      facilityId,
-
-      normalizedCode:
-        normalizedRoleCode,
-    });
+  const role = await roles.findOne({
+    facilityId: null,
+    scope: 'GLOBAL',
+    code: roleCode,
+  });
 
   if (role === null) {
     throw new Error(
@@ -302,157 +231,131 @@ async function main():
     database.collection<UserDocument>(
       'users',
     );
-
-  const normalizedUsername =
-    normalize(
-      seedEnvironment
-        .ADMIN_USERNAME,
-    );
-
-  let user =
-    await users.findOne({
-      facilityId,
-      normalizedUsername,
-    });
+  let user = await users.findOne({
+    normalizedUsername,
+  });
+  const resetPassword =
+    environment
+      .ADMIN_RESET_PASSWORD ===
+    'true';
 
   if (user === null) {
     const passwordHash =
       await hashPassword(
-        seedEnvironment
-          .ADMIN_PASSWORD,
-
+        environment.ADMIN_PASSWORD,
         authConfig,
       );
-
-    const userId =
-      createObjectId();
+    const userId = createObjectId();
 
     await users.insertOne({
-      _id:
-        userId,
-
+      _id: userId,
       facilityId,
-
       publicId:
         'USR-SYSTEM-ADMIN',
-
+      staffId: null,
       username:
-        seedEnvironment
-          .ADMIN_USERNAME,
-
+        environment.ADMIN_USERNAME,
       normalizedUsername,
-
+      email: null,
+      normalizedEmail: null,
       displayName:
-        seedEnvironment
+        environment
           .ADMIN_DISPLAY_NAME,
-
       passwordHash,
-
-      status:
-        'ACTIVE',
-
-      failedLoginCount:
-        0,
-
-      passwordChangedAt:
-        now,
-
-      tokenVersion:
-        0,
-
-      permissionVersion:
-        0,
-
-      schemaVersion:
-        1,
-
-      version:
-        0,
-
-      createdAt:
-        now,
-
-      updatedAt:
-        now,
+      status: 'ACTIVE',
+      mustChangePassword: true,
+      failedLoginCount: 0,
+      lockedUntil: null,
+      lastLoginAt: null,
+      passwordChangedAt: now,
+      tokenVersion: 0,
+      permissionVersion: 0,
+      schemaVersion: 1,
+      version: 0,
+      createdBy: null,
+      updatedBy: null,
+      disabledAt: null,
+      disabledBy: null,
+      disabledReason: null,
+      createdAt: now,
+      updatedAt: now,
     });
 
-    user =
-      await users.findOne({
-        _id: userId,
-      });
+    user = await users.findOne({
+      _id: userId,
+    });
   } else {
-    const resetPassword =
-      seedEnvironment
-        .ADMIN_RESET_PASSWORD ===
-      'true';
+    const passwordSet: Record<
+      string,
+      unknown
+    > = {};
+    const increments: Record<
+      string,
+      number
+    > = {
+      version: 1,
+    };
 
-    const passwordUpdate =
-      resetPassword
-        ? {
-            passwordHash:
-              await hashPassword(
-                seedEnvironment
-                  .ADMIN_PASSWORD,
+    if (resetPassword) {
+      passwordSet['passwordHash'] =
+        await hashPassword(
+          environment.ADMIN_PASSWORD,
+          authConfig,
+        );
+      passwordSet[
+        'passwordChangedAt'
+      ] = now;
+      passwordSet[
+        'mustChangePassword'
+      ] = true;
+      passwordSet[
+        'failedLoginCount'
+      ] = 0;
+      passwordSet['lockedUntil'] =
+        null;
+      increments['tokenVersion'] =
+        1;
+    }
 
-                authConfig,
-              ),
-
-            passwordChangedAt:
-              now,
-          }
-        : {};
-
-    await users.updateOne(
-      {
-        _id:
-          user._id,
-
-        version:
-          user.version,
-      },
-
-      {
-        $set: {
-          username:
-            seedEnvironment
-              .ADMIN_USERNAME,
-
-          normalizedUsername,
-
-          displayName:
-            seedEnvironment
-              .ADMIN_DISPLAY_NAME,
-
-          status:
-            'ACTIVE',
-
-          ...passwordUpdate,
+    const updateResult =
+      await users.updateOne(
+        {
+          _id: user._id,
+          version: user.version,
         },
-
-        $inc: {
-          version:
-            1,
-
-          ...(resetPassword
-            ? {
-                tokenVersion:
-                  1,
-              }
-            : {}),
+        {
+          $set: {
+            facilityId,
+            username:
+              environment.ADMIN_USERNAME,
+            normalizedUsername,
+            displayName:
+              environment
+                .ADMIN_DISPLAY_NAME,
+            status: 'ACTIVE',
+            disabledAt: null,
+            disabledBy: null,
+            disabledReason: null,
+            ...passwordSet,
+          },
+          $inc: increments,
+          $currentDate: {
+            updatedAt: true,
+          },
         },
+      );
 
-        $currentDate: {
-          updatedAt:
-            true,
-        },
-      },
-    );
+    if (
+      updateResult.modifiedCount !== 1
+    ) {
+      throw new Error(
+        'System administrator user changed while the seed was running',
+      );
+    }
 
-    user =
-      await users.findOne({
-        _id:
-          user._id,
-      });
+    user = await users.findOne({
+      _id: user._id,
+    });
   }
 
   if (user === null) {
@@ -464,16 +367,12 @@ async function main():
   const seededPermissions =
     await permissions
       .find({
-        facilityId,
-
-        key: {
+        code: {
           $in: [
             ...permissionKeys,
           ],
         },
-
-        active:
-          true,
+        isActive: true,
       })
       .toArray();
 
@@ -486,151 +385,102 @@ async function main():
     );
   }
 
+  const permissionIds =
+    seededPermissions.map(
+      (permission) =>
+        permission._id,
+    );
   const rolePermissions =
     database.collection(
       'rolePermissions',
     );
 
-  for (
-    const permission of
-    seededPermissions
-  ) {
-    await rolePermissions.updateOne(
-      {
-        facilityId,
+  await rolePermissions.deleteMany({
+    roleId: role._id,
+    permissionId: {
+      $nin: permissionIds,
+    },
+  });
 
-        roleId:
-          role._id,
-
-        permissionKey:
-          permission.key,
-
-        active:
-          true,
-      },
-
-      {
-        $setOnInsert: {
-          _id:
-            createObjectId(),
-
-          facilityId,
-
-          roleId:
-            role._id,
-
-          permissionId:
-            permission._id,
-
-          permissionKey:
-            permission.key,
-
-          active:
-            true,
-
-          assignedAt:
-            now,
-
-          assignedBy:
-            user._id,
-
-          schemaVersion:
-            1,
-
-          version:
-            0,
-
-          createdAt:
-            now,
-
-          updatedAt:
-            now,
+  await rolePermissions.bulkWrite(
+    seededPermissions.map(
+      (permission) => ({
+        updateOne: {
+          filter: {
+            roleId: role._id,
+            permissionId:
+              permission._id,
+          },
+          update: {
+            $set: {
+              grantedBy: user!._id,
+              grantedAt: now,
+              updatedAt: now,
+            },
+            $setOnInsert: {
+              _id: createObjectId(),
+              roleId: role._id,
+              permissionId:
+                permission._id,
+              schemaVersion: 1,
+              version: 0,
+              createdAt: now,
+            },
+          },
+          upsert: true,
         },
-      },
-
-      {
-        upsert:
-          true,
-      },
-    );
-  }
+      }),
+    ),
+    {
+      ordered: true,
+    },
+  );
 
   await database
     .collection('userRoles')
     .updateOne(
       {
-        facilityId,
-
-        userId:
-          user._id,
-
-        roleId:
-          role._id,
-
-        active:
-          true,
+        userId: user._id,
+        roleId: role._id,
+        facilityId: null,
       },
-
       {
+        $set: {
+          assignedBy: user._id,
+          assignedAt: now,
+          expiresAt: null,
+          isActive: true,
+          revokedAt: null,
+          revokedBy: null,
+          revocationReason: null,
+          updatedAt: now,
+        },
         $setOnInsert: {
-          _id:
-            createObjectId(),
-
-          facilityId,
-
-          userId:
-            user._id,
-
-          roleId:
-            role._id,
-
-          active:
-            true,
-
-          assignedAt:
-            now,
-
-          assignedBy:
-            user._id,
-
-          schemaVersion:
-            1,
-
-          version:
-            0,
-
-          createdAt:
-            now,
-
-          updatedAt:
-            now,
+          _id: createObjectId(),
+          userId: user._id,
+          roleId: role._id,
+          facilityId: null,
+          schemaVersion: 1,
+          version: 0,
+          createdAt: now,
         },
       },
-
       {
-        upsert:
-          true,
+        upsert: true,
       },
     );
 
   await users.updateOne(
     {
-      _id:
-        user._id,
+      _id: user._id,
     },
-
     {
       $inc: {
-        permissionVersion:
-          1,
-
-        version:
-          1,
+        permissionVersion: 1,
+        version: 1,
       },
-
       $currentDate: {
-        updatedAt:
-          true,
+        updatedAt: true,
       },
     },
   );
@@ -639,26 +489,17 @@ async function main():
     JSON.stringify(
       {
         success: true,
-
         facilityId:
           facilityId.toHexString(),
-
         username:
-          seedEnvironment
-            .ADMIN_USERNAME,
-
-        role:
-          'SYSTEM_ADMINISTRATOR',
-
+          environment.ADMIN_USERNAME,
+        role: roleCode,
+        roleScope: 'GLOBAL',
         permissions:
           permissionKeys.length,
-
         passwordReset:
-          seedEnvironment
-            .ADMIN_RESET_PASSWORD ===
-          'true',
+          resetPassword,
       },
-
       null,
       2,
     ),

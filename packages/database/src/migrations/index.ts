@@ -22,25 +22,40 @@ import {
   operationalInfrastructure,
 } from './005-operational-infrastructure.js';
 
+import {
+  identitySchemaAlignment,
+} from './006-identity-schema-alignment.js';
+
+import {
+  identityRuntimeInfrastructure,
+} from './007-identity-runtime-infrastructure.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
   accessControlFoundation,
   auditFoundation,
   operationalInfrastructure,
+  identitySchemaAlignment,
+  identityRuntimeInfrastructure,
 ] as const;
 
 export async function runMigrations(
-  database: Db,
+  database:
+    Db,
 ): Promise<void> {
   await database
-    .collection('_migrations')
+    .collection(
+      '_migrations',
+    )
     .createIndex(
       {
-        id: 1,
+        id:
+          1,
       },
       {
-        unique: true,
+        unique:
+          true,
       },
     );
 
@@ -53,13 +68,19 @@ export async function runMigrations(
           )
           .find({})
           .project({
-            id: 1,
+            id:
+              1,
           })
           .toArray()
-      ).map((record) =>
-        String(
-          record['id'],
-        ),
+      ).map(
+        (
+          record,
+        ) =>
+          String(
+            record[
+              'id'
+            ],
+          ),
       ),
     );
 

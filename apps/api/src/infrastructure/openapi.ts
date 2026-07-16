@@ -4,6 +4,10 @@ import type {
 
 import swaggerUi from 'swagger-ui-express';
 
+import {
+  identityOpenApi,
+} from '../modules/identity/identity.openapi.js';
+
 export const openApiDocument = {
   openapi:
     '3.1.0',
@@ -16,7 +20,7 @@ export const openApiDocument = {
       '0.1.0',
 
     description:
-      'Pure MERN Hospital Management Information System API using standalone MongoDB and application-level transaction compensation.',
+      'Hospital Management Information System API using MongoDB, centralized authorization, audit history, idempotency, and application-level transaction compensation.',
   },
 
   servers: [
@@ -24,6 +28,26 @@ export const openApiDocument = {
       url:
         '/api/v1',
     },
+  ],
+
+  tags: [
+    {
+      name:
+        'Authentication',
+
+      description:
+        'Sign-in, refresh-token rotation, sign-out, and session management.',
+    },
+
+    {
+      name:
+        'Operations',
+
+      description:
+        'Liveness and readiness endpoints.',
+    },
+
+    ...identityOpenApi.tags,
   ],
 
   components: {
@@ -84,11 +108,17 @@ export const openApiDocument = {
               code: {
                 type:
                   'string',
+
+                example:
+                  'IDENTITY_VALIDATION_FAILED',
               },
 
               message: {
                 type:
                   'string',
+
+                example:
+                  'The request could not be completed',
               },
 
               correlationId: {
@@ -99,6 +129,11 @@ export const openApiDocument = {
                   'uuid',
               },
 
+              retryable: {
+                type:
+                  'boolean',
+              },
+
               details: {
                 type:
                   'array',
@@ -106,6 +141,28 @@ export const openApiDocument = {
                 items: {
                   type:
                     'object',
+
+                  required: [
+                    'code',
+                    'message',
+                  ],
+
+                  properties: {
+                    code: {
+                      type:
+                        'string',
+                    },
+
+                    message: {
+                      type:
+                        'string',
+                    },
+
+                    path: {
+                      type:
+                        'string',
+                    },
+                  },
                 },
               },
             },
@@ -130,6 +187,9 @@ export const openApiDocument = {
 
             pattern:
               '^[a-fA-F0-9]{24}$',
+
+            example:
+              '507f191e810c19729de860ea',
           },
 
           login: {
@@ -149,6 +209,10 @@ export const openApiDocument = {
           },
         },
       },
+
+      ...identityOpenApi
+        .components
+        .schemas,
     },
   },
 
@@ -223,7 +287,7 @@ export const openApiDocument = {
 
           '401': {
             description:
-              'Refresh token invalid, expired, reused, or revoked',
+              'Refresh token is invalid, expired, reused, or revoked',
           },
         },
       },
@@ -249,6 +313,31 @@ export const openApiDocument = {
           '200': {
             description:
               'Current session revoked',
+          },
+        },
+      },
+    },
+
+    '/auth/logout-all': {
+      post: {
+        tags: [
+          'Authentication',
+        ],
+
+        summary:
+          'Revoke all sessions for the authenticated user',
+
+        security: [
+          {
+            bearerAuth:
+              [],
+          },
+        ],
+
+        responses: {
+          '200': {
+            description:
+              'All active sessions revoked',
           },
         },
       },
@@ -284,7 +373,7 @@ export const openApiDocument = {
         responses: {
           '200': {
             description:
-              'API and MongoDB are ready',
+              'API and required dependencies are ready',
           },
 
           '503': {
@@ -294,6 +383,8 @@ export const openApiDocument = {
         },
       },
     },
+
+    ...identityOpenApi.paths,
   },
 } as const;
 
@@ -303,6 +394,7 @@ export function registerOpenApi(
 ): void {
   application.get(
     '/api/v1/openapi.json',
+
     (
       _request,
       response,
