@@ -8,6 +8,11 @@
       "types": "./src/index.ts",
       "development": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./facility-configuration": {
+      "types": "./src/facility-configuration.ts",
+      "development": "./src/facility-configuration.ts",
+      "default": "./dist/facility-configuration.js"
     }
   },
   "files": [

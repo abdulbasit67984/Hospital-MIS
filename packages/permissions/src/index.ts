@@ -160,8 +160,25 @@ export const permissionKeys = [
   'roles.manage',
   'roles.assign',
 
+  'facilities.read',
+  'facilities.create',
+  'facilities.update',
+  'facilities.activate',
+  'facilities.deactivate',
+  'facilities.manage_all',
+
+  'departments.read',
+  'departments.create',
+  'departments.update',
+  'departments.activate',
+  'departments.deactivate',
+
+  'configuration.definitions.read',
   'configuration.read',
   'configuration.manage',
+  'configuration.manage_global',
+  'configuration.manage_sensitive',
+  'configuration.read_history',
 
   'security.break_glass',
   'security.sessions.revoke_all',
@@ -223,7 +240,17 @@ function sensitivityFor(
     key ===
       'identity.users.reset_password' ||
     key ===
-      'identity.users.revoke_sessions'
+      'identity.users.revoke_sessions' ||
+    key ===
+      'facilities.deactivate' ||
+    key ===
+      'facilities.manage_all' ||
+    key ===
+      'departments.deactivate' ||
+    key ===
+      'configuration.manage_global' ||
+    key ===
+      'configuration.manage_sensitive'
   ) {
     return 'HIGHLY_SENSITIVE';
   }
@@ -240,7 +267,13 @@ function sensitivityFor(
     key.startsWith(
       'radiology.reports.',
     ) ||
-    key.startsWith('identity.')
+    key.startsWith('identity.') ||
+    key.startsWith('facilities.') ||
+    key.startsWith('departments.') ||
+    key ===
+      'configuration.manage' ||
+    key ===
+      'configuration.read_history'
   ) {
     return 'SENSITIVE';
   }
@@ -255,16 +288,12 @@ export const permissionDefinitions:
       key,
 
       module:
-        key.startsWith(
-          'identity.',
-        )
+        key.startsWith('identity.')
           ? 'identity'
-          : (
-              key.split(
-                '.',
-              )[0] ??
-              'unknown'
-            ),
+          : key.startsWith('facilities.') ||
+              key.startsWith('departments.')
+            ? 'facility'
+            : (key.split('.')[0] ?? 'unknown'),
 
       description:
         humanizePermission(

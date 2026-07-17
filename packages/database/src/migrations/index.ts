@@ -30,6 +30,10 @@ import {
   identityRuntimeInfrastructure,
 } from './007-identity-runtime-infrastructure.js';
 
+import {
+  facilityConfigurationFoundation,
+} from './008-facility-configuration-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -38,6 +42,7 @@ export const migrations = [
   operationalInfrastructure,
   identitySchemaAlignment,
   identityRuntimeInfrastructure,
+  facilityConfigurationFoundation,
 ] as const;
 
 export async function runMigrations(

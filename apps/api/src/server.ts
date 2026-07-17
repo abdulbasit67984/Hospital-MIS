@@ -10,6 +10,10 @@ import {
 } from '@hospital-mis/config';
 
 import {
+  loadFacilityConfigurationConfig,
+} from '@hospital-mis/config/facility-configuration';
+
+import {
   connectDatabase,
   disconnectDatabase,
   nativeDatabase,
@@ -28,12 +32,20 @@ import {
 } from './app.js';
 
 import {
-  registerOpenApi,
-} from './infrastructure/openapi.js';
+  createFacilityInfrastructure,
+} from './infrastructure/facility-infrastructure.js';
+
+import type {
+  MongoCoherentConfigurationCacheAdapter,
+} from './infrastructure/mongo-coherent-configuration-cache.adapter.js';
 
 import {
   createOperationalInfrastructure,
 } from './infrastructure/operational-infrastructure.js';
+
+import {
+  registerOpenApi,
+} from './infrastructure/openapi.js';
 
 import {
   createReadinessProbe,
@@ -52,6 +64,10 @@ import {
 } from './modules/authorization/index.js';
 
 import {
+  createFacilityModule,
+} from './modules/facility/index.js';
+
+import {
   createIdentityInfrastructure,
   createIdentityModule,
 } from './modules/identity/index.js';
@@ -61,6 +77,9 @@ const config =
 
 const authConfig =
   loadAuthConfig();
+
+const facilityConfiguration =
+  loadFacilityConfigurationConfig();
 
 const logger =
   createLogger(
@@ -85,15 +104,8 @@ const database =
 let socketServer:
   SocketIoServer | undefined;
 
-const authenticationModule =
-  createAuthenticationModule({
-    database,
-
-    apiConfig:
-      config,
-
-    authConfig,
-  });
+let facilityCache:
+  MongoCoherentConfigurationCacheAdapter | undefined;
 
 const authorizationModule =
   createAuthorizationModule(
@@ -112,6 +124,11 @@ const operationalInfrastructure =
     async publishEvent(
       event,
     ) {
+      await facilityCache
+        ?.handleOutboxEvent(
+          event,
+        );
+
       socketServer?.emit(
         event.eventType,
         {
@@ -131,6 +148,37 @@ const operationalInfrastructure =
     },
   });
 
+const facilityInfrastructure =
+  createFacilityInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    configuration:
+      facilityConfiguration,
+  });
+
+facilityCache =
+  facilityInfrastructure.cache;
+
+const authenticationModule =
+  createAuthenticationModule({
+    database,
+
+    apiConfig:
+      config,
+
+    authConfig,
+
+    facilityAccess:
+      facilityInfrastructure
+        .application
+        .facilityService,
+  });
+
 const identityInfrastructure =
   createIdentityInfrastructure({
     database,
@@ -146,6 +194,18 @@ const identityModule =
   createIdentityModule({
     application:
       identityInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
+const facilityModule =
+  createFacilityModule({
+    infrastructure:
+      facilityInfrastructure,
 
     authenticationService:
       authenticationModule.service,
@@ -179,6 +239,17 @@ const app =
       application.use(
         '/api/v1/identity',
         identityModule.router,
+      );
+
+      application.use(
+        '/api/v1/facilities',
+        facilityModule.router,
+      );
+
+      application.use(
+        '/api/v1/configuration',
+        facilityModule
+          .configurationRouter,
       );
     },
   });
@@ -246,8 +317,7 @@ async function dispatchOutboxBatch():
       processed <
       100;
 
-      processed +=
-        1
+      processed += 1
     ) {
       const found =
         await operationalInfrastructure
@@ -348,6 +418,79 @@ async function recoverIdentityTransactions():
   }
 }
 
+let facilityRecoveryRunning =
+  false;
+
+async function recoverFacilityTransactions():
+  Promise<void> {
+  if (
+    facilityRecoveryRunning
+  ) {
+    return;
+  }
+
+  facilityRecoveryRunning =
+    true;
+
+  try {
+    const now =
+      new Date();
+
+    const staleBefore =
+      new Date(
+        now.getTime() -
+          5 * 60 * 1000,
+      );
+
+    const markedStale =
+      await facilityInfrastructure
+        .recovery
+        .markStaleTransactions(
+          staleBefore,
+        );
+
+    const result =
+      await facilityInfrastructure
+        .recovery
+        .recoverAvailable({
+          workerId:
+            `api-facility-recovery:${process.pid}`,
+
+          maxTransactions:
+            20,
+
+          now,
+        });
+
+    if (
+      markedStale >
+        0 ||
+      result.recovered >
+        0 ||
+      result.failed >
+        0
+    ) {
+      logger.info(
+        {
+          markedStale,
+          ...result,
+        },
+        'Facility recovery cycle completed',
+      );
+    }
+  } catch (error) {
+    logger.error(
+      {
+        error,
+      },
+      'Facility recovery cycle failed',
+    );
+  } finally {
+    facilityRecoveryRunning =
+      false;
+  }
+}
+
 const outboxInterval =
   setInterval(
     () => {
@@ -368,7 +511,18 @@ const identityRecoveryInterval =
 
 identityRecoveryInterval.unref();
 
+const facilityRecoveryInterval =
+  setInterval(
+    () => {
+      void recoverFacilityTransactions();
+    },
+    15_000,
+  );
+
+facilityRecoveryInterval.unref();
+
 void recoverIdentityTransactions();
+void recoverFacilityTransactions();
 
 httpServer.listen(
   config.apiPort,
@@ -387,8 +541,23 @@ httpServer.listen(
         identityModule:
           'mounted',
 
+        facilityModule:
+          'mounted',
+
+        configurationModule:
+          'mounted',
+
         identityRecovery:
           'enabled',
+
+        facilityRecovery:
+          'enabled',
+
+        facilityAuthenticationEnforcement:
+          'enabled',
+
+        configurationCacheCoherence:
+          'mongo-epoch-and-outbox',
       },
       'Hospital MIS API started',
     );
@@ -417,6 +586,10 @@ async function shutdown(
 
   clearInterval(
     identityRecoveryInterval,
+  );
+
+  clearInterval(
+    facilityRecoveryInterval,
   );
 
   logger.info(
@@ -460,6 +633,7 @@ async function shutdown(
             reject(
               error,
             );
+
             return;
           }
 

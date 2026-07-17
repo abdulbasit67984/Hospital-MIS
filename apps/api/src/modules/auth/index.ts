@@ -1,15 +1,20 @@
 import type {
-  Db,
-} from '@hospital-mis/database';
-
-import type {
   ApiConfig,
   AuthConfig,
 } from '@hospital-mis/config';
 
+import type {
+  Db,
+} from '@hospital-mis/database';
+
 import {
   MongoAuthRepository,
 } from './auth.repository.js';
+
+import {
+  withFacilityStatusEnforcement,
+  type AuthenticationFacilityAccessPort,
+} from './auth.repository.facility-aware.js';
 
 import {
   createAuthenticationRouter,
@@ -29,12 +34,24 @@ export function createAuthenticationModule(
 
     authConfig:
       AuthConfig;
+
+    facilityAccess?:
+      AuthenticationFacilityAccessPort;
   },
 ) {
-  const repository =
+  const baseRepository =
     new MongoAuthRepository(
       input.database,
     );
+
+  const repository =
+    input.facilityAccess ===
+    undefined
+      ? baseRepository
+      : withFacilityStatusEnforcement(
+          baseRepository,
+          input.facilityAccess,
+        );
 
   const service =
     new AuthenticationService(
@@ -45,11 +62,13 @@ export function createAuthenticationModule(
   const router =
     createAuthenticationRouter({
       service,
+
       apiConfig:
         input.apiConfig,
     });
 
   return {
+    baseRepository,
     repository,
     service,
     router,
@@ -57,5 +76,6 @@ export function createAuthenticationModule(
 }
 
 export * from './auth.repository.js';
+export * from './auth.repository.facility-aware.js';
 export * from './auth.service.js';
 export * from './auth.types.js';

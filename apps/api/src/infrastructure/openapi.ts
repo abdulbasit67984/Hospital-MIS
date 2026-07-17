@@ -5,6 +5,10 @@ import type {
 import swaggerUi from 'swagger-ui-express';
 
 import {
+  facilityOpenApi,
+} from '../modules/facility/facility.openapi.js';
+
+import {
   identityOpenApi,
 } from '../modules/identity/identity.openapi.js';
 
@@ -20,7 +24,7 @@ export const openApiDocument = {
       '0.1.0',
 
     description:
-      'Hospital Management Information System API using MongoDB, centralized authorization, audit history, idempotency, and application-level transaction compensation.',
+      'Hospital Management Information System API using MongoDB, centralized authorization, audit history, idempotency, encrypted configuration, optimistic concurrency, and application-level transaction compensation.',
   },
 
   servers: [
@@ -48,6 +52,7 @@ export const openApiDocument = {
     },
 
     ...identityOpenApi.tags,
+    ...facilityOpenApi.tags,
   ],
 
   components: {
@@ -110,7 +115,7 @@ export const openApiDocument = {
                   'string',
 
                 example:
-                  'IDENTITY_VALIDATION_FAILED',
+                  'FACILITY_CONCURRENCY_CONFLICT',
               },
 
               message: {
@@ -213,6 +218,10 @@ export const openApiDocument = {
       ...identityOpenApi
         .components
         .schemas,
+
+      ...facilityOpenApi
+        .components
+        .schemas,
     },
   },
 
@@ -248,7 +257,7 @@ export const openApiDocument = {
 
           '401': {
             description:
-              'Invalid credentials',
+              'Invalid credentials or inactive facility',
 
             content: {
               'application/json': {
@@ -287,7 +296,7 @@ export const openApiDocument = {
 
           '401': {
             description:
-              'Refresh token is invalid, expired, reused, or revoked',
+              'Refresh token, user, session, or facility is invalid or inactive',
           },
         },
       },
@@ -385,6 +394,7 @@ export const openApiDocument = {
     },
 
     ...identityOpenApi.paths,
+    ...facilityOpenApi.paths,
   },
 } as const;
 

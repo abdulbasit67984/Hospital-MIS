@@ -151,9 +151,15 @@ export * from './models/audit.js';
 export * from './models/auth.js';
 export * from './models/common.js';
 export * from './models/critical.js';
+export * from './models/facility-configuration.js';
 export * from './models/registry.js';
 
+export * from './models/department.model.js';
+export * from './models/facility.model.js';
 export * from './models/permission.model.js';
+export * from './models/setting-definition.model.js';
+export * from './models/system-setting.model.js';
+export * from './models/system-setting-version.model.js';
 export * from './models/role.model.js';
 export * from './models/role-permission.model.js';
 export * from './models/staff.model.js';

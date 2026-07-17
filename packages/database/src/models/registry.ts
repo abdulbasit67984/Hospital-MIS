@@ -24,6 +24,10 @@ import {
 } from './critical.js';
 
 import {
+  facilityConfigurationSchemas,
+} from './facility-configuration.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -81,6 +85,15 @@ export function schemaForCollection(
     auth !== undefined
   ) {
     return auth;
+  }
+
+  const facilityConfiguration =
+    facilityConfigurationSchemas[
+      name as keyof typeof facilityConfigurationSchemas
+    ];
+
+  if (facilityConfiguration !== undefined) {
+    return facilityConfiguration;
   }
 
   const critical =
