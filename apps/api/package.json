@@ -12,6 +12,7 @@
     "seed:identity-access": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-identity-access.ts",
     "seed:facility-configuration-access": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-facility-configuration-access.ts",
     "seed:facility-configuration": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-facility-configuration.ts",
+    "seed:patient-guardian-access": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-patient-guardian-access.ts",
     "test:facility-integration": "cross-env RUN_FACILITY_CONFIGURATION_INTEGRATION_TESTS=true vitest run --config ../../vitest.integration.config.ts src/modules/facility/tests/facility-configuration.integration.test.ts"
   },
   "dependencies": {

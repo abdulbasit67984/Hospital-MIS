@@ -44,6 +44,10 @@ import {
 } from './infrastructure/operational-infrastructure.js';
 
 import {
+  createPatientInfrastructure,
+} from './infrastructure/patient-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -71,6 +75,10 @@ import {
   createIdentityInfrastructure,
   createIdentityModule,
 } from './modules/identity/index.js';
+
+import {
+  createPatientModule,
+} from './modules/patient/index.js';
 
 const config =
   loadApiConfig();
@@ -164,6 +172,19 @@ const facilityInfrastructure =
 facilityCache =
   facilityInfrastructure.cache;
 
+const patientInfrastructure =
+  createPatientInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -214,6 +235,18 @@ const facilityModule =
       authorizationModule.service,
   });
 
+const patientModule =
+  createPatientModule({
+    infrastructure:
+      patientInfrastructure,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -250,6 +283,16 @@ const app =
         '/api/v1/configuration',
         facilityModule
           .configurationRouter,
+      );
+
+      application.use(
+        '/api/v1/patients',
+        patientModule.patientRouter,
+      );
+
+      application.use(
+        '/api/v1/guardians',
+        patientModule.guardianRouter,
       );
     },
   });
@@ -491,6 +534,79 @@ async function recoverFacilityTransactions():
   }
 }
 
+let patientRecoveryRunning =
+  false;
+
+async function recoverPatientTransactions():
+  Promise<void> {
+  if (
+    patientRecoveryRunning
+  ) {
+    return;
+  }
+
+  patientRecoveryRunning =
+    true;
+
+  try {
+    const now =
+      new Date();
+
+    const staleBefore =
+      new Date(
+        now.getTime() -
+          5 * 60 * 1000,
+      );
+
+    const markedStale =
+      await patientInfrastructure
+        .recovery
+        .markStaleTransactions(
+          staleBefore,
+        );
+
+    const result =
+      await patientInfrastructure
+        .recovery
+        .recoverAvailable({
+          workerId:
+            `api-patient-recovery:${process.pid}`,
+
+          maxTransactions:
+            20,
+
+          now,
+        });
+
+    if (
+      markedStale >
+        0 ||
+      result.recovered >
+        0 ||
+      result.failed >
+        0
+    ) {
+      logger.info(
+        {
+          markedStale,
+          ...result,
+        },
+        'Patient recovery cycle completed',
+      );
+    }
+  } catch (error) {
+    logger.error(
+      {
+        error,
+      },
+      'Patient recovery cycle failed',
+    );
+  } finally {
+    patientRecoveryRunning =
+      false;
+  }
+}
+
 const outboxInterval =
   setInterval(
     () => {
@@ -521,8 +637,19 @@ const facilityRecoveryInterval =
 
 facilityRecoveryInterval.unref();
 
+const patientRecoveryInterval =
+  setInterval(
+    () => {
+      void recoverPatientTransactions();
+    },
+    15_000,
+  );
+
+patientRecoveryInterval.unref();
+
 void recoverIdentityTransactions();
 void recoverFacilityTransactions();
+void recoverPatientTransactions();
 
 httpServer.listen(
   config.apiPort,
@@ -547,10 +674,22 @@ httpServer.listen(
         configurationModule:
           'mounted',
 
+        patientModule:
+          'mounted',
+
+        guardianModule:
+          'mounted',
+
         identityRecovery:
           'enabled',
 
         facilityRecovery:
+          'enabled',
+
+        patientRecovery:
+          'enabled',
+
+        patientSensitiveSnapshotEncryption:
           'enabled',
 
         facilityAuthenticationEnforcement:
@@ -590,6 +729,10 @@ async function shutdown(
 
   clearInterval(
     facilityRecoveryInterval,
+  );
+
+  clearInterval(
+    patientRecoveryInterval,
   );
 
   logger.info(

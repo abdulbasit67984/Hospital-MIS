@@ -28,8 +28,60 @@ import {
 } from './facility-configuration.js';
 
 import {
+  guardianSchema,
+} from './guardian.model.js';
+
+import {
+  patientGuardianSchema,
+} from './patient-guardian.model.js';
+
+import {
+  patientIdentifierSchema,
+} from './patient-identifier.model.js';
+
+import {
+  patientSchema,
+} from './patient.model.js';
+
+import {
+  patientMergeSchema,
+} from './patient-merge.model.js';
+
+import {
+  patientAddressSchema,
+  patientAlertSchema,
+  patientContactSchema,
+} from './patient-profile.model.js';
+
+import {
   commonFields,
 } from './common.js';
+
+export const patientGuardianSchemas = {
+  patients:
+    patientSchema,
+
+  patientIdentifiers:
+    patientIdentifierSchema,
+
+  guardians:
+    guardianSchema,
+
+  patientGuardians:
+    patientGuardianSchema,
+
+  patientContacts:
+    patientContactSchema,
+
+  patientAddresses:
+    patientAddressSchema,
+
+  patientAlerts:
+    patientAlertSchema,
+
+  patientMerges:
+    patientMergeSchema,
+} as const;
 
 function specFor(
   name: HospitalCollectionName,
@@ -92,8 +144,22 @@ export function schemaForCollection(
       name as keyof typeof facilityConfigurationSchemas
     ];
 
-  if (facilityConfiguration !== undefined) {
+  if (
+    facilityConfiguration !==
+    undefined
+  ) {
     return facilityConfiguration;
+  }
+
+  const patientGuardian =
+    patientGuardianSchemas[
+      name as keyof typeof patientGuardianSchemas
+    ];
+
+  if (
+    patientGuardian !== undefined
+  ) {
+    return patientGuardian;
   }
 
   const critical =
@@ -153,12 +219,16 @@ export function schemaForCollection(
     specFor(name).facilityScoped
   ) {
     schema.index({
-      facilityId: 1,
-      createdAt: -1,
+      facilityId:
+        1,
+
+      createdAt:
+        -1,
     });
   } else {
     schema.index({
-      createdAt: -1,
+      createdAt:
+        -1,
     });
   }
 

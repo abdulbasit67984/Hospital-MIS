@@ -34,6 +34,14 @@ import {
   facilityConfigurationFoundation,
 } from './008-facility-configuration-foundation.js';
 
+import {
+  patientGuardianFoundation,
+} from './009-patient-guardian-foundation.js';
+
+import {
+  patientMergeFoundation,
+} from './010-patient-merge-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -43,6 +51,8 @@ export const migrations = [
   identitySchemaAlignment,
   identityRuntimeInfrastructure,
   facilityConfigurationFoundation,
+  patientGuardianFoundation,
+  patientMergeFoundation,
 ] as const;
 
 export async function runMigrations(

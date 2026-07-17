@@ -12,6 +12,10 @@ import {
   identityOpenApi,
 } from '../modules/identity/identity.openapi.js';
 
+import {
+  patientOpenApi,
+} from '../modules/patient/patient.openapi.js';
+
 export const openApiDocument = {
   openapi:
     '3.1.0',
@@ -53,6 +57,7 @@ export const openApiDocument = {
 
     ...identityOpenApi.tags,
     ...facilityOpenApi.tags,
+    ...patientOpenApi.tags,
   ],
 
   components: {
@@ -220,6 +225,10 @@ export const openApiDocument = {
         .schemas,
 
       ...facilityOpenApi
+        .components
+        .schemas,
+
+      ...patientOpenApi
         .components
         .schemas,
     },
@@ -395,6 +404,7 @@ export const openApiDocument = {
 
     ...identityOpenApi.paths,
     ...facilityOpenApi.paths,
+    ...patientOpenApi.paths,
   },
 } as const;
 
