@@ -46,6 +46,18 @@ import {
   registrationOpdQueueFoundation,
 } from './011-registration-opd-queue-foundation.js';
 
+import {
+  clinicalEncountersEmrFoundation,
+} from './012-clinical-encounters-emr-foundation.js';
+
+import {
+  clinicalVitalSignsFoundation,
+} from './013-clinical-vital-signs-foundation.js';
+
+import {
+  clinicalReferralsFoundation,
+} from './014-clinical-referrals-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -58,6 +70,9 @@ export const migrations = [
   patientGuardianFoundation,
   patientMergeFoundation,
   registrationOpdQueueFoundation,
+  clinicalEncountersEmrFoundation,
+  clinicalVitalSignsFoundation,
+  clinicalReferralsFoundation,
 ] as const;
 
 export async function runMigrations(

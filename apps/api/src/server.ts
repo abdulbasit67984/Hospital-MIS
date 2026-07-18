@@ -35,6 +35,10 @@ import {
   createFacilityInfrastructure,
 } from './infrastructure/facility-infrastructure.js';
 
+import {
+  createClinicalEmrInfrastructure,
+} from './modules/clinical-emr/clinical-emr.module.js';
+
 import type {
   MongoCoherentConfigurationCacheAdapter,
 } from './infrastructure/mongo-coherent-configuration-cache.adapter.js';
@@ -74,6 +78,10 @@ import {
 import {
   createFacilityModule,
 } from './modules/facility/index.js';
+
+import {
+  createClinicalEmrModule,
+} from './modules/clinical-emr/clinical-emr.module.js';
 
 import {
   createIdentityInfrastructure,
@@ -227,6 +235,43 @@ const registrationQueueInfrastructure =
     },
   });
 
+const clinicalEmrInfrastructure =
+  createClinicalEmrInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+
+    async publishRealtime(
+      message,
+    ) {
+      socketServer?.emit(
+        message.eventType,
+        {
+          facilityId:
+            message.facilityId,
+
+          patientId:
+            message.patientId,
+
+          encounterId:
+            message.encounterId,
+
+          providerId:
+            message.providerId,
+
+          payload:
+            message.payload,
+        },
+      );
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -301,6 +346,18 @@ const registrationQueueModule =
       authorizationModule.service,
   });
 
+const clinicalEmrModule =
+  createClinicalEmrModule({
+    infrastructure:
+      clinicalEmrInfrastructure,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -352,6 +409,12 @@ const app =
       application.use(
         '/api/v1/opd',
         registrationQueueModule.router,
+      );
+
+
+      application.use(
+        '/api/v1/clinical-emr',
+        clinicalEmrModule.router,
       );
     },
   });
@@ -724,6 +787,76 @@ async function recoverRegistrationQueueTransactions():
   }
 }
 
+let clinicalEmrRecoveryRunning =
+  false;
+
+async function recoverClinicalEmrTransactions():
+  Promise<void> {
+  if (
+    clinicalEmrRecoveryRunning
+  ) {
+    return;
+  }
+
+  clinicalEmrRecoveryRunning =
+    true;
+
+  try {
+    const now =
+      new Date();
+
+    const staleBefore =
+      new Date(
+        now.getTime() -
+          5 * 60 * 1000,
+      );
+
+    const markedStale =
+      await clinicalEmrInfrastructure
+        .recovery
+        .markStaleTransactions(
+          staleBefore,
+        );
+
+    const result =
+      await clinicalEmrInfrastructure
+        .recovery
+        .recoverAvailable({
+          workerId:
+            `api-clinical-emr-recovery:${process.pid}`,
+
+          maxTransactions:
+            20,
+
+          now,
+        });
+
+    if (
+      markedStale > 0 ||
+      result.recovered > 0 ||
+      result.failed > 0
+    ) {
+      logger.info(
+        {
+          markedStale,
+          ...result,
+        },
+        'Clinical EMR recovery cycle completed',
+      );
+    }
+  } catch (error) {
+    logger.error(
+      {
+        error,
+      },
+      'Clinical EMR recovery cycle failed',
+    );
+  } finally {
+    clinicalEmrRecoveryRunning =
+      false;
+  }
+}
+
 const outboxInterval =
   setInterval(
     () => {
@@ -774,10 +907,21 @@ const registrationQueueRecoveryInterval =
 
 registrationQueueRecoveryInterval.unref();
 
+const clinicalEmrRecoveryInterval =
+  setInterval(
+    () => {
+      void recoverClinicalEmrTransactions();
+    },
+    15_000,
+  );
+
+clinicalEmrRecoveryInterval.unref();
+
 void recoverIdentityTransactions();
 void recoverFacilityTransactions();
 void recoverPatientTransactions();
 void recoverRegistrationQueueTransactions();
+void recoverClinicalEmrTransactions();
 
 httpServer.listen(
   config.apiPort,
@@ -811,6 +955,9 @@ httpServer.listen(
         registrationQueueModule:
           'mounted',
 
+        clinicalEmrModule:
+          'mounted',
+
         identityRecovery:
           'enabled',
 
@@ -823,10 +970,16 @@ httpServer.listen(
         registrationQueueRecovery:
           'enabled',
 
+        clinicalEmrRecovery:
+          'enabled',
+
         patientSensitiveSnapshotEncryption:
           'enabled',
 
         registrationQueueSnapshotEncryption:
+          'enabled',
+
+        clinicalEmrSnapshotEncryption:
           'enabled',
 
         facilityAuthenticationEnforcement:
@@ -871,6 +1024,10 @@ async function shutdown(
 
   clearInterval(
     registrationQueueRecoveryInterval,
+  );
+
+  clearInterval(
+    clinicalEmrRecoveryInterval,
   );
 
   logger.info(

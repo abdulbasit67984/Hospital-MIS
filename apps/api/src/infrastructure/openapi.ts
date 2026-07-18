@@ -5,6 +5,10 @@ import type {
 import swaggerUi from 'swagger-ui-express';
 
 import {
+  clinicalEmrOpenApi,
+} from '../modules/clinical-emr/clinical-emr.module.js';
+
+import {
   facilityOpenApi,
 } from '../modules/facility/facility.openapi.js';
 
@@ -58,6 +62,7 @@ export const openApiDocument = {
     ...identityOpenApi.tags,
     ...facilityOpenApi.tags,
     ...patientOpenApi.tags,
+    ...clinicalEmrOpenApi.tags,
   ],
 
   components: {
@@ -229,6 +234,10 @@ export const openApiDocument = {
         .schemas,
 
       ...patientOpenApi
+        .components
+        .schemas,
+
+      ...clinicalEmrOpenApi
         .components
         .schemas,
     },
@@ -405,6 +414,8 @@ export const openApiDocument = {
     ...identityOpenApi.paths,
     ...facilityOpenApi.paths,
     ...patientOpenApi.paths,
+
+    ...clinicalEmrOpenApi.paths,
   },
 } as const;
 

@@ -74,6 +74,37 @@ import {
 } from './registration.model.js';
 
 import {
+  allergySchema,
+  patientAllergySchema,
+  patientAllergyVersionSchema,
+} from './allergy.model.js';
+
+import {
+  clinicalReferralSchema,
+} from './clinical-referral.model.js';
+
+import {
+  clinicalNoteSchema,
+  clinicalNoteVersionSchema,
+} from './clinical-note.model.js';
+
+import {
+  diagnosisSchema,
+  encounterDiagnosisSchema,
+  patientProblemSchema,
+  patientProblemVersionSchema,
+} from './diagnosis.model.js';
+
+import {
+  encounterSchema,
+  encounterStatusHistorySchema,
+} from './encounter.model.js';
+
+import {
+  vitalSignSchema,
+} from './vital-sign.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -127,6 +158,47 @@ export const registrationQueueSchemas = {
 
   queueStatusHistories:
     queueStatusHistorySchema,
+} as const;
+
+export const clinicalEmrSchemas = {
+  encounters:
+    encounterSchema,
+
+  encounterStatusHistories:
+    encounterStatusHistorySchema,
+
+  clinicalNotes:
+    clinicalNoteSchema,
+
+  clinicalNoteVersions:
+    clinicalNoteVersionSchema,
+
+  diagnoses:
+    diagnosisSchema,
+
+  encounterDiagnoses:
+    encounterDiagnosisSchema,
+
+  patientProblems:
+    patientProblemSchema,
+
+  patientProblemVersions:
+    patientProblemVersionSchema,
+
+  allergies:
+    allergySchema,
+
+  patientAllergies:
+    patientAllergySchema,
+
+  patientAllergyVersions:
+    patientAllergyVersionSchema,
+
+  clinicalReferrals:
+    clinicalReferralSchema,
+
+  vitalSigns:
+    vitalSignSchema,
 } as const;
 
 function specFor(
@@ -217,6 +289,17 @@ export function schemaForCollection(
     registrationQueue !== undefined
   ) {
     return registrationQueue;
+  }
+
+  const clinicalEmr =
+    clinicalEmrSchemas[
+      name as keyof typeof clinicalEmrSchemas
+    ];
+
+  if (
+    clinicalEmr !== undefined
+  ) {
+    return clinicalEmr;
   }
 
   const critical =

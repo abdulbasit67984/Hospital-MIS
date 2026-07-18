@@ -155,8 +155,15 @@ export * from './models/critical.js';
 export * from './models/facility-configuration.js';
 export * from './models/patient-guardian.types.js';
 export * from './models/registration-queue.types.js';
+export * from './models/clinical-emr.types.js';
 export * from './models/registry.js';
 
+export * from './models/allergy.model.js';
+export * from './models/clinical-note.model.js';
+export * from './models/clinical-referral.model.js';
+export * from './models/diagnosis.model.js';
+export * from './models/encounter.model.js';
+export * from './models/vital-sign.model.js';
 export * from './models/department.model.js';
 export * from './models/facility.model.js';
 export * from './models/guardian.model.js';
