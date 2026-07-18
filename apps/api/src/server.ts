@@ -48,6 +48,10 @@ import {
 } from './infrastructure/patient-infrastructure.js';
 
 import {
+  createRegistrationQueueInfrastructure,
+} from './infrastructure/registration-queue-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -79,6 +83,10 @@ import {
 import {
   createPatientModule,
 } from './modules/patient/index.js';
+
+import {
+  createRegistrationQueueModule,
+} from './modules/registration-queue/index.js';
 
 const config =
   loadApiConfig();
@@ -185,6 +193,40 @@ const patientInfrastructure =
       facilityInfrastructure.crypto,
   });
 
+const registrationQueueInfrastructure =
+  createRegistrationQueueInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+
+    async publishRealtime(
+      message,
+    ) {
+      socketServer?.emit(
+        message.eventType,
+        {
+          facilityId:
+            message.facilityId,
+
+          queueDefinitionId:
+            message.queueDefinitionId,
+
+          serviceDate:
+            message.serviceDate,
+
+          payload:
+            message.payload,
+        },
+      );
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -247,6 +289,18 @@ const patientModule =
       authorizationModule.service,
   });
 
+const registrationQueueModule =
+  createRegistrationQueueModule({
+    infrastructure:
+      registrationQueueInfrastructure,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -293,6 +347,11 @@ const app =
       application.use(
         '/api/v1/guardians',
         patientModule.guardianRouter,
+      );
+
+      application.use(
+        '/api/v1/opd',
+        registrationQueueModule.router,
       );
     },
   });
@@ -343,9 +402,7 @@ let outboxDispatching =
 
 async function dispatchOutboxBatch():
   Promise<void> {
-  if (
-    outboxDispatching
-  ) {
+  if (outboxDispatching) {
     return;
   }
 
@@ -360,7 +417,8 @@ async function dispatchOutboxBatch():
       processed <
       100;
 
-      processed += 1
+      processed +=
+      1
     ) {
       const found =
         await operationalInfrastructure
@@ -369,9 +427,7 @@ async function dispatchOutboxBatch():
             'api-outbox-dispatcher',
           );
 
-      if (
-        !found
-      ) {
+      if (!found) {
         break;
       }
     }
@@ -433,12 +489,9 @@ async function recoverIdentityTransactions():
         });
 
     if (
-      markedStale >
-        0 ||
-      result.recovered >
-        0 ||
-      result.failed >
-        0
+      markedStale > 0 ||
+      result.recovered > 0 ||
+      result.failed > 0
     ) {
       logger.info(
         {
@@ -506,12 +559,9 @@ async function recoverFacilityTransactions():
         });
 
     if (
-      markedStale >
-        0 ||
-      result.recovered >
-        0 ||
-      result.failed >
-        0
+      markedStale > 0 ||
+      result.recovered > 0 ||
+      result.failed > 0
     ) {
       logger.info(
         {
@@ -579,12 +629,9 @@ async function recoverPatientTransactions():
         });
 
     if (
-      markedStale >
-        0 ||
-      result.recovered >
-        0 ||
-      result.failed >
-        0
+      markedStale > 0 ||
+      result.recovered > 0 ||
+      result.failed > 0
     ) {
       logger.info(
         {
@@ -603,6 +650,76 @@ async function recoverPatientTransactions():
     );
   } finally {
     patientRecoveryRunning =
+      false;
+  }
+}
+
+let registrationQueueRecoveryRunning =
+  false;
+
+async function recoverRegistrationQueueTransactions():
+  Promise<void> {
+  if (
+    registrationQueueRecoveryRunning
+  ) {
+    return;
+  }
+
+  registrationQueueRecoveryRunning =
+    true;
+
+  try {
+    const now =
+      new Date();
+
+    const staleBefore =
+      new Date(
+        now.getTime() -
+          5 * 60 * 1000,
+      );
+
+    const markedStale =
+      await registrationQueueInfrastructure
+        .recovery
+        .markStaleTransactions(
+          staleBefore,
+        );
+
+    const result =
+      await registrationQueueInfrastructure
+        .recovery
+        .recoverAvailable({
+          workerId:
+            `api-registration-queue-recovery:${process.pid}`,
+
+          maxTransactions:
+            20,
+
+          now,
+        });
+
+    if (
+      markedStale > 0 ||
+      result.recovered > 0 ||
+      result.failed > 0
+    ) {
+      logger.info(
+        {
+          markedStale,
+          ...result,
+        },
+        'Registration and OPD queue recovery cycle completed',
+      );
+    }
+  } catch (error) {
+    logger.error(
+      {
+        error,
+      },
+      'Registration and OPD queue recovery cycle failed',
+    );
+  } finally {
+    registrationQueueRecoveryRunning =
       false;
   }
 }
@@ -647,9 +764,20 @@ const patientRecoveryInterval =
 
 patientRecoveryInterval.unref();
 
+const registrationQueueRecoveryInterval =
+  setInterval(
+    () => {
+      void recoverRegistrationQueueTransactions();
+    },
+    15_000,
+  );
+
+registrationQueueRecoveryInterval.unref();
+
 void recoverIdentityTransactions();
 void recoverFacilityTransactions();
 void recoverPatientTransactions();
+void recoverRegistrationQueueTransactions();
 
 httpServer.listen(
   config.apiPort,
@@ -680,6 +808,9 @@ httpServer.listen(
         guardianModule:
           'mounted',
 
+        registrationQueueModule:
+          'mounted',
+
         identityRecovery:
           'enabled',
 
@@ -689,7 +820,13 @@ httpServer.listen(
         patientRecovery:
           'enabled',
 
+        registrationQueueRecovery:
+          'enabled',
+
         patientSensitiveSnapshotEncryption:
+          'enabled',
+
+        registrationQueueSnapshotEncryption:
           'enabled',
 
         facilityAuthenticationEnforcement:
@@ -707,12 +844,9 @@ let shuttingDown =
   false;
 
 async function shutdown(
-  signal:
-    string,
+  signal: string,
 ): Promise<void> {
-  if (
-    shuttingDown
-  ) {
+  if (shuttingDown) {
     return;
   }
 
@@ -733,6 +867,10 @@ async function shutdown(
 
   clearInterval(
     patientRecoveryInterval,
+  );
+
+  clearInterval(
+    registrationQueueRecoveryInterval,
   );
 
   logger.info(
@@ -770,13 +908,10 @@ async function shutdown(
         (
           error,
         ) => {
-          if (
-            error
-          ) {
+          if (error) {
             reject(
               error,
             );
-
             return;
           }
 
@@ -820,6 +955,7 @@ for (
             logger.fatal(
               {
                 error,
+                signal,
               },
               'Graceful shutdown failed',
             );

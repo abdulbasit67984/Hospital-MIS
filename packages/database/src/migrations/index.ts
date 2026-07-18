@@ -42,6 +42,10 @@ import {
   patientMergeFoundation,
 } from './010-patient-merge-foundation.js';
 
+import {
+  registrationOpdQueueFoundation,
+} from './011-registration-opd-queue-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -53,6 +57,7 @@ export const migrations = [
   facilityConfigurationFoundation,
   patientGuardianFoundation,
   patientMergeFoundation,
+  registrationOpdQueueFoundation,
 ] as const;
 
 export async function runMigrations(

@@ -8,14 +8,18 @@ export const transactionStatuses = [
   'RECOVERY_REQUIRED',
   'MANUALLY_RESOLVED',
 ] as const;
+
 export const queueStatuses = [
   'WAITING',
   'CALLED',
-  'IN_CONSULTATION',
+  'SERVING',
   'SKIPPED',
+  'TRANSFERRED',
   'COMPLETED',
   'CANCELLED',
+  'NO_SHOW',
 ] as const;
+
 export const bedStatuses = [
   'AVAILABLE',
   'RESERVED',
@@ -24,6 +28,7 @@ export const bedStatuses = [
   'MAINTENANCE',
   'BLOCKED',
 ] as const;
+
 export const invoiceStatuses = [
   'DRAFT',
   'ACTIVE',
@@ -33,6 +38,7 @@ export const invoiceStatuses = [
   'CANCELLED',
   'REVERSED',
 ] as const;
+
 export const prescriptionStatuses = [
   'DRAFT',
   'ISSUED',
@@ -41,6 +47,7 @@ export const prescriptionStatuses = [
   'CANCELLED',
   'EXPIRED',
 ] as const;
+
 export const claimStatuses = [
   'DRAFT',
   'READY',
@@ -53,4 +60,11 @@ export const claimStatuses = [
   'PAID',
   'CLOSED',
 ] as const;
-export const jobStatuses = ['PENDING', 'LEASED', 'COMPLETED', 'FAILED', 'DEAD_LETTER'] as const;
+
+export const jobStatuses = [
+  'PENDING',
+  'LEASED',
+  'COMPLETED',
+  'FAILED',
+  'DEAD_LETTER',
+] as const;

@@ -54,6 +54,26 @@ import {
 } from './patient-profile.model.js';
 
 import {
+  opdClinicSchema,
+  servicePointSchema,
+} from './opd-context.model.js';
+
+import {
+  opdVisitSchema,
+} from './opd-visit.model.js';
+
+import {
+  queueDefinitionSchema,
+  queueStatusHistorySchema,
+  queueTokenSchema,
+  serviceCounterSchema,
+} from './queue.model.js';
+
+import {
+  registrationSchema,
+} from './registration.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -81,6 +101,32 @@ export const patientGuardianSchemas = {
 
   patientMerges:
     patientMergeSchema,
+} as const;
+
+export const registrationQueueSchemas = {
+  opdClinics:
+    opdClinicSchema,
+
+  servicePoints:
+    servicePointSchema,
+
+  serviceCounters:
+    serviceCounterSchema,
+
+  registrations:
+    registrationSchema,
+
+  opdVisits:
+    opdVisitSchema,
+
+  queueDefinitions:
+    queueDefinitionSchema,
+
+  queueTokens:
+    queueTokenSchema,
+
+  queueStatusHistories:
+    queueStatusHistorySchema,
 } as const;
 
 function specFor(
@@ -160,6 +206,17 @@ export function schemaForCollection(
     patientGuardian !== undefined
   ) {
     return patientGuardian;
+  }
+
+  const registrationQueue =
+    registrationQueueSchemas[
+      name as keyof typeof registrationQueueSchemas
+    ];
+
+  if (
+    registrationQueue !== undefined
+  ) {
+    return registrationQueue;
   }
 
   const critical =

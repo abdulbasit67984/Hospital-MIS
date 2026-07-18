@@ -154,6 +154,7 @@ export * from './models/common.js';
 export * from './models/critical.js';
 export * from './models/facility-configuration.js';
 export * from './models/patient-guardian.types.js';
+export * from './models/registration-queue.types.js';
 export * from './models/registry.js';
 
 export * from './models/department.model.js';
@@ -164,6 +165,10 @@ export * from './models/patient-identifier.model.js';
 export * from './models/patient-merge.model.js';
 export * from './models/patient.model.js';
 export * from './models/patient-profile.model.js';
+export * from './models/opd-context.model.js';
+export * from './models/opd-visit.model.js';
+export * from './models/queue.model.js';
+export * from './models/registration.model.js';
 export * from './models/permission.model.js';
 export * from './models/setting-definition.model.js';
 export * from './models/system-setting.model.js';

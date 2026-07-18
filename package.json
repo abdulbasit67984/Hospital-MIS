@@ -9,8 +9,7 @@
     "pnpm": ">=11.13.0"
   },
   "scripts": {
-    "dev": "pnpm build:packages && concurrently -k -n API,WORKER,WEB -c auto \"pnpm --filter @hospital-mis/api dev\" \"pnpm --filter @hospital-mis/worker dev\" \"pnpm --filter @hospital-mis/web dev\"",
-    "build:packages": "pnpm --filter './packages/**' build",
+    "dev": "concurrently -k -n API,WORKER,WEB -c auto \"pnpm --filter @hospital-mis/api dev\" \"pnpm --filter @hospital-mis/worker dev\" \"pnpm --filter @hospital-mis/web dev\"",    "build:packages": "pnpm --filter \"./packages/**\" build",
     "build": "pnpm -r --workspace-concurrency=4 --if-present build",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint .",
@@ -51,5 +50,11 @@
   "dependencies": {
     "@hospital-mis/database": "workspace:*",
     "mongoose": "9.7.4"
+  },
+  "pnpm": {
+    "approvedBuilds": {
+      "@scarf/scarf": true,
+      "argon2": true
+    }
   }
 }
