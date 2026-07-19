@@ -13,6 +13,10 @@ import {
 } from '../modules/facility/facility.openapi.js';
 
 import {
+  formularyPrescriptionOpenApi,
+} from '../modules/formulary-prescriptions/formulary-prescriptions.openapi.js';
+
+import {
   identityOpenApi,
 } from '../modules/identity/identity.openapi.js';
 
@@ -32,7 +36,7 @@ export const openApiDocument = {
       '0.1.0',
 
     description:
-      'Hospital Management Information System API using MongoDB, centralized authorization, audit history, idempotency, encrypted configuration, optimistic concurrency, and application-level transaction compensation.',
+      'Hospital Management Information System API using MongoDB, centralized authorization, audit history, idempotency, encrypted snapshots, optimistic concurrency, application-level compensation, Clinical EMR, standardized formulary, and immutable prescription lifecycle management.',
   },
 
   servers: [
@@ -63,6 +67,7 @@ export const openApiDocument = {
     ...facilityOpenApi.tags,
     ...patientOpenApi.tags,
     ...clinicalEmrOpenApi.tags,
+    ...formularyPrescriptionOpenApi.tags,
   ],
 
   components: {
@@ -125,7 +130,7 @@ export const openApiDocument = {
                   'string',
 
                 example:
-                  'FACILITY_CONCURRENCY_CONFLICT',
+                  'PRESCRIPTION_CONCURRENCY_CONFLICT',
               },
 
               message: {
@@ -189,6 +194,9 @@ export const openApiDocument = {
         type:
           'object',
 
+        additionalProperties:
+          false,
+
         required: [
           'facilityId',
           'login',
@@ -240,6 +248,10 @@ export const openApiDocument = {
       ...clinicalEmrOpenApi
         .components
         .schemas,
+
+      ...formularyPrescriptionOpenApi
+        .components
+        .schemas,
     },
   },
 
@@ -275,7 +287,7 @@ export const openApiDocument = {
 
           '401': {
             description:
-              'Invalid credentials or inactive facility',
+              'Credentials, user, or facility is invalid or inactive',
 
             content: {
               'application/json': {
@@ -414,8 +426,8 @@ export const openApiDocument = {
     ...identityOpenApi.paths,
     ...facilityOpenApi.paths,
     ...patientOpenApi.paths,
-
     ...clinicalEmrOpenApi.paths,
+    ...formularyPrescriptionOpenApi.paths,
   },
 } as const;
 

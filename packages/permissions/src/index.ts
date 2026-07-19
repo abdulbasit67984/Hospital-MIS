@@ -27,9 +27,15 @@ export const permissionKeys = [
   'clinical_notes.create',
   'clinical_notes.amend',
 
+  'formulary.read',
+  'formulary.manage',
+
   'prescriptions.read',
+  'prescriptions.create',
   'prescriptions.issue',
+  'prescriptions.amend',
   'prescriptions.cancel',
+  'prescriptions.print',
 
   'laboratory.orders.read',
   'laboratory.orders.manage',
@@ -261,6 +267,8 @@ function sensitivityFor(
     key.startsWith('assistance.') ||
     key.startsWith('clinical_notes.') ||
     key.startsWith('encounters.') ||
+    key.startsWith('prescriptions.') ||
+    key === 'formulary.manage' ||
     key.startsWith(
       'laboratory.results.',
     ) ||

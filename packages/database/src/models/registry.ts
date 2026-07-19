@@ -105,6 +105,23 @@ import {
 } from './vital-sign.model.js';
 
 import {
+  formularyItemSchema,
+  medicineFormSchema,
+  medicineRouteSchema,
+  medicineSchema,
+  medicineStrengthSchema,
+  prescriptionFrequencySchema,
+  unitOfMeasureSchema,
+} from './medicine-catalog.model.js';
+
+import {
+  prescriptionItemSchema,
+  prescriptionSafetyWarningSchema,
+  prescriptionSchema,
+  prescriptionStatusHistorySchema,
+} from './prescription.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -199,6 +216,41 @@ export const clinicalEmrSchemas = {
 
   vitalSigns:
     vitalSignSchema,
+} as const;
+
+export const formularyPrescriptionSchemas = {
+  medicines:
+    medicineSchema,
+
+  medicineForms:
+    medicineFormSchema,
+
+  medicineRoutes:
+    medicineRouteSchema,
+
+  unitsOfMeasure:
+    unitOfMeasureSchema,
+
+  medicineStrengths:
+    medicineStrengthSchema,
+
+  prescriptionFrequencies:
+    prescriptionFrequencySchema,
+
+  formularyItems:
+    formularyItemSchema,
+
+  prescriptions:
+    prescriptionSchema,
+
+  prescriptionItems:
+    prescriptionItemSchema,
+
+  prescriptionSafetyWarnings:
+    prescriptionSafetyWarningSchema,
+
+  prescriptionStatusHistories:
+    prescriptionStatusHistorySchema,
 } as const;
 
 function specFor(
@@ -300,6 +352,18 @@ export function schemaForCollection(
     clinicalEmr !== undefined
   ) {
     return clinicalEmr;
+  }
+
+  const formularyPrescription =
+    formularyPrescriptionSchemas[
+      name as keyof typeof formularyPrescriptionSchemas
+    ];
+
+  if (
+    formularyPrescription !==
+    undefined
+  ) {
+    return formularyPrescription;
   }
 
   const critical =

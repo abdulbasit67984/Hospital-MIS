@@ -36,11 +36,11 @@ import {
 } from './infrastructure/facility-infrastructure.js';
 
 import {
-  createClinicalEmrInfrastructure,
-} from './modules/clinical-emr/clinical-emr.module.js';
+  createFormularyPrescriptionInfrastructure,
+} from './infrastructure/formulary-prescription-infrastructure.js';
 
-import type {
-  MongoCoherentConfigurationCacheAdapter,
+import {
+  type MongoCoherentConfigurationCacheAdapter,
 } from './infrastructure/mongo-coherent-configuration-cache.adapter.js';
 
 import {
@@ -48,20 +48,24 @@ import {
 } from './infrastructure/operational-infrastructure.js';
 
 import {
+  registerOpenApi,
+} from './infrastructure/openapi.js';
+
+import {
   createPatientInfrastructure,
 } from './infrastructure/patient-infrastructure.js';
+
+import {
+  createReadinessProbe,
+} from './infrastructure/readiness.js';
 
 import {
   createRegistrationQueueInfrastructure,
 } from './infrastructure/registration-queue-infrastructure.js';
 
 import {
-  registerOpenApi,
-} from './infrastructure/openapi.js';
-
-import {
-  createReadinessProbe,
-} from './infrastructure/readiness.js';
+  startRecoveryLoop,
+} from './infrastructure/recovery-loop.js';
 
 import {
   createAuditModule,
@@ -76,12 +80,17 @@ import {
 } from './modules/authorization/index.js';
 
 import {
+  createClinicalEmrInfrastructure,
+  createClinicalEmrModule,
+} from './modules/clinical-emr/clinical-emr.module.js';
+
+import {
   createFacilityModule,
 } from './modules/facility/index.js';
 
 import {
-  createClinicalEmrModule,
-} from './modules/clinical-emr/clinical-emr.module.js';
+  createFormularyPrescriptionModule,
+} from './modules/formulary-prescriptions/formulary-prescriptions.module.js';
 
 import {
   createIdentityInfrastructure,
@@ -272,6 +281,49 @@ const clinicalEmrInfrastructure =
     },
   });
 
+const formularyPrescriptionInfrastructure =
+  createFormularyPrescriptionInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+
+    interactions:
+      null,
+
+    async publishRealtime(
+      message,
+    ) {
+      socketServer?.emit(
+        message.eventType,
+        {
+          facilityId:
+            message.facilityId,
+
+          patientId:
+            message.patientId,
+
+          encounterId:
+            message.encounterId,
+
+          prescriptionId:
+            message.prescriptionId,
+
+          providerId:
+            message.providerId,
+
+          payload:
+            message.payload,
+        },
+      );
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -290,6 +342,7 @@ const authenticationModule =
 const identityInfrastructure =
   createIdentityInfrastructure({
     database,
+
     authConfig,
 
     auditRepository:
@@ -358,6 +411,18 @@ const clinicalEmrModule =
       authorizationModule.service,
   });
 
+const formularyPrescriptionModule =
+  createFormularyPrescriptionModule({
+    application:
+      formularyPrescriptionInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -366,6 +431,7 @@ const readinessProbe =
 const app =
   createApp({
     config,
+
     readinessProbe,
 
     registerRoutes(
@@ -411,10 +477,14 @@ const app =
         registrationQueueModule.router,
       );
 
-
       application.use(
         '/api/v1/clinical-emr',
         clinicalEmrModule.router,
+      );
+
+      application.use(
+        '/api/v1/formulary-prescriptions',
+        formularyPrescriptionModule.router,
       );
     },
   });
@@ -465,7 +535,9 @@ let outboxDispatching =
 
 async function dispatchOutboxBatch():
   Promise<void> {
-  if (outboxDispatching) {
+  if (
+    outboxDispatching
+  ) {
     return;
   }
 
@@ -490,7 +562,9 @@ async function dispatchOutboxBatch():
             'api-outbox-dispatcher',
           );
 
-      if (!found) {
+      if (
+        !found
+      ) {
         break;
       }
     }
@@ -499,360 +573,11 @@ async function dispatchOutboxBatch():
       {
         error,
       },
+
       'Outbox dispatch cycle failed',
     );
   } finally {
     outboxDispatching =
-      false;
-  }
-}
-
-let identityRecoveryRunning =
-  false;
-
-async function recoverIdentityTransactions():
-  Promise<void> {
-  if (
-    identityRecoveryRunning
-  ) {
-    return;
-  }
-
-  identityRecoveryRunning =
-    true;
-
-  try {
-    const now =
-      new Date();
-
-    const staleBefore =
-      new Date(
-        now.getTime() -
-          5 * 60 * 1000,
-      );
-
-    const markedStale =
-      await identityInfrastructure
-        .recovery
-        .markStaleTransactions(
-          staleBefore,
-        );
-
-    const result =
-      await identityInfrastructure
-        .recovery
-        .recoverAvailable({
-          workerId:
-            `api-identity-recovery:${process.pid}`,
-
-          maxTransactions:
-            20,
-
-          now,
-        });
-
-    if (
-      markedStale > 0 ||
-      result.recovered > 0 ||
-      result.failed > 0
-    ) {
-      logger.info(
-        {
-          markedStale,
-          ...result,
-        },
-        'Identity recovery cycle completed',
-      );
-    }
-  } catch (error) {
-    logger.error(
-      {
-        error,
-      },
-      'Identity recovery cycle failed',
-    );
-  } finally {
-    identityRecoveryRunning =
-      false;
-  }
-}
-
-let facilityRecoveryRunning =
-  false;
-
-async function recoverFacilityTransactions():
-  Promise<void> {
-  if (
-    facilityRecoveryRunning
-  ) {
-    return;
-  }
-
-  facilityRecoveryRunning =
-    true;
-
-  try {
-    const now =
-      new Date();
-
-    const staleBefore =
-      new Date(
-        now.getTime() -
-          5 * 60 * 1000,
-      );
-
-    const markedStale =
-      await facilityInfrastructure
-        .recovery
-        .markStaleTransactions(
-          staleBefore,
-        );
-
-    const result =
-      await facilityInfrastructure
-        .recovery
-        .recoverAvailable({
-          workerId:
-            `api-facility-recovery:${process.pid}`,
-
-          maxTransactions:
-            20,
-
-          now,
-        });
-
-    if (
-      markedStale > 0 ||
-      result.recovered > 0 ||
-      result.failed > 0
-    ) {
-      logger.info(
-        {
-          markedStale,
-          ...result,
-        },
-        'Facility recovery cycle completed',
-      );
-    }
-  } catch (error) {
-    logger.error(
-      {
-        error,
-      },
-      'Facility recovery cycle failed',
-    );
-  } finally {
-    facilityRecoveryRunning =
-      false;
-  }
-}
-
-let patientRecoveryRunning =
-  false;
-
-async function recoverPatientTransactions():
-  Promise<void> {
-  if (
-    patientRecoveryRunning
-  ) {
-    return;
-  }
-
-  patientRecoveryRunning =
-    true;
-
-  try {
-    const now =
-      new Date();
-
-    const staleBefore =
-      new Date(
-        now.getTime() -
-          5 * 60 * 1000,
-      );
-
-    const markedStale =
-      await patientInfrastructure
-        .recovery
-        .markStaleTransactions(
-          staleBefore,
-        );
-
-    const result =
-      await patientInfrastructure
-        .recovery
-        .recoverAvailable({
-          workerId:
-            `api-patient-recovery:${process.pid}`,
-
-          maxTransactions:
-            20,
-
-          now,
-        });
-
-    if (
-      markedStale > 0 ||
-      result.recovered > 0 ||
-      result.failed > 0
-    ) {
-      logger.info(
-        {
-          markedStale,
-          ...result,
-        },
-        'Patient recovery cycle completed',
-      );
-    }
-  } catch (error) {
-    logger.error(
-      {
-        error,
-      },
-      'Patient recovery cycle failed',
-    );
-  } finally {
-    patientRecoveryRunning =
-      false;
-  }
-}
-
-let registrationQueueRecoveryRunning =
-  false;
-
-async function recoverRegistrationQueueTransactions():
-  Promise<void> {
-  if (
-    registrationQueueRecoveryRunning
-  ) {
-    return;
-  }
-
-  registrationQueueRecoveryRunning =
-    true;
-
-  try {
-    const now =
-      new Date();
-
-    const staleBefore =
-      new Date(
-        now.getTime() -
-          5 * 60 * 1000,
-      );
-
-    const markedStale =
-      await registrationQueueInfrastructure
-        .recovery
-        .markStaleTransactions(
-          staleBefore,
-        );
-
-    const result =
-      await registrationQueueInfrastructure
-        .recovery
-        .recoverAvailable({
-          workerId:
-            `api-registration-queue-recovery:${process.pid}`,
-
-          maxTransactions:
-            20,
-
-          now,
-        });
-
-    if (
-      markedStale > 0 ||
-      result.recovered > 0 ||
-      result.failed > 0
-    ) {
-      logger.info(
-        {
-          markedStale,
-          ...result,
-        },
-        'Registration and OPD queue recovery cycle completed',
-      );
-    }
-  } catch (error) {
-    logger.error(
-      {
-        error,
-      },
-      'Registration and OPD queue recovery cycle failed',
-    );
-  } finally {
-    registrationQueueRecoveryRunning =
-      false;
-  }
-}
-
-let clinicalEmrRecoveryRunning =
-  false;
-
-async function recoverClinicalEmrTransactions():
-  Promise<void> {
-  if (
-    clinicalEmrRecoveryRunning
-  ) {
-    return;
-  }
-
-  clinicalEmrRecoveryRunning =
-    true;
-
-  try {
-    const now =
-      new Date();
-
-    const staleBefore =
-      new Date(
-        now.getTime() -
-          5 * 60 * 1000,
-      );
-
-    const markedStale =
-      await clinicalEmrInfrastructure
-        .recovery
-        .markStaleTransactions(
-          staleBefore,
-        );
-
-    const result =
-      await clinicalEmrInfrastructure
-        .recovery
-        .recoverAvailable({
-          workerId:
-            `api-clinical-emr-recovery:${process.pid}`,
-
-          maxTransactions:
-            20,
-
-          now,
-        });
-
-    if (
-      markedStale > 0 ||
-      result.recovered > 0 ||
-      result.failed > 0
-    ) {
-      logger.info(
-        {
-          markedStale,
-          ...result,
-        },
-        'Clinical EMR recovery cycle completed',
-      );
-    }
-  } catch (error) {
-    logger.error(
-      {
-        error,
-      },
-      'Clinical EMR recovery cycle failed',
-    );
-  } finally {
-    clinicalEmrRecoveryRunning =
       false;
   }
 }
@@ -862,69 +587,97 @@ const outboxInterval =
     () => {
       void dispatchOutboxBatch();
     },
+
     1_000,
   );
 
 outboxInterval.unref();
 
-const identityRecoveryInterval =
-  setInterval(
-    () => {
-      void recoverIdentityTransactions();
-    },
-    15_000,
-  );
+const recoveryLoops = [
+  startRecoveryLoop({
+    name:
+      'Identity',
 
-identityRecoveryInterval.unref();
+    workerId:
+      `api-identity-recovery:${process.pid}`,
 
-const facilityRecoveryInterval =
-  setInterval(
-    () => {
-      void recoverFacilityTransactions();
-    },
-    15_000,
-  );
+    recovery:
+      identityInfrastructure.recovery,
 
-facilityRecoveryInterval.unref();
+    logger,
+  }),
 
-const patientRecoveryInterval =
-  setInterval(
-    () => {
-      void recoverPatientTransactions();
-    },
-    15_000,
-  );
+  startRecoveryLoop({
+    name:
+      'Facility',
 
-patientRecoveryInterval.unref();
+    workerId:
+      `api-facility-recovery:${process.pid}`,
 
-const registrationQueueRecoveryInterval =
-  setInterval(
-    () => {
-      void recoverRegistrationQueueTransactions();
-    },
-    15_000,
-  );
+    recovery:
+      facilityInfrastructure.recovery,
 
-registrationQueueRecoveryInterval.unref();
+    logger,
+  }),
 
-const clinicalEmrRecoveryInterval =
-  setInterval(
-    () => {
-      void recoverClinicalEmrTransactions();
-    },
-    15_000,
-  );
+  startRecoveryLoop({
+    name:
+      'Patient',
 
-clinicalEmrRecoveryInterval.unref();
+    workerId:
+      `api-patient-recovery:${process.pid}`,
 
-void recoverIdentityTransactions();
-void recoverFacilityTransactions();
-void recoverPatientTransactions();
-void recoverRegistrationQueueTransactions();
-void recoverClinicalEmrTransactions();
+    recovery:
+      patientInfrastructure.recovery,
+
+    logger,
+  }),
+
+  startRecoveryLoop({
+    name:
+      'Registration and OPD queue',
+
+    workerId:
+      `api-registration-queue-recovery:${process.pid}`,
+
+    recovery:
+      registrationQueueInfrastructure.recovery,
+
+    logger,
+  }),
+
+  startRecoveryLoop({
+    name:
+      'Clinical EMR',
+
+    workerId:
+      `api-clinical-emr-recovery:${process.pid}`,
+
+    recovery:
+      clinicalEmrInfrastructure.recovery,
+
+    logger,
+  }),
+
+  startRecoveryLoop({
+    name:
+      'Formulary and prescriptions',
+
+    workerId:
+      `api-formulary-prescription-recovery:${process.pid}`,
+
+    recovery:
+      formularyPrescriptionInfrastructure.recovery,
+
+    logger,
+  }),
+];
+
+void dispatchOutboxBatch();
 
 httpServer.listen(
   config.apiPort,
+
   () => {
     logger.info(
       {
@@ -958,19 +711,13 @@ httpServer.listen(
         clinicalEmrModule:
           'mounted',
 
-        identityRecovery:
+        formularyPrescriptionModule:
+          'mounted',
+
+        transactionRecovery:
           'enabled',
 
-        facilityRecovery:
-          'enabled',
-
-        patientRecovery:
-          'enabled',
-
-        registrationQueueRecovery:
-          'enabled',
-
-        clinicalEmrRecovery:
+        outboxDispatch:
           'enabled',
 
         patientSensitiveSnapshotEncryption:
@@ -982,12 +729,19 @@ httpServer.listen(
         clinicalEmrSnapshotEncryption:
           'enabled',
 
+        formularyPrescriptionSnapshotEncryption:
+          'enabled',
+
+        prescriptionInventoryMutation:
+          'disabled',
+
         facilityAuthenticationEnforcement:
           'enabled',
 
         configurationCacheCoherence:
           'mongo-epoch-and-outbox',
       },
+
       'Hospital MIS API started',
     );
   },
@@ -997,9 +751,12 @@ let shuttingDown =
   false;
 
 async function shutdown(
-  signal: string,
+  signal:
+    string,
 ): Promise<void> {
-  if (shuttingDown) {
+  if (
+    shuttingDown
+  ) {
     return;
   }
 
@@ -1010,30 +767,18 @@ async function shutdown(
     outboxInterval,
   );
 
-  clearInterval(
-    identityRecoveryInterval,
-  );
-
-  clearInterval(
-    facilityRecoveryInterval,
-  );
-
-  clearInterval(
-    patientRecoveryInterval,
-  );
-
-  clearInterval(
-    registrationQueueRecoveryInterval,
-  );
-
-  clearInterval(
-    clinicalEmrRecoveryInterval,
-  );
+  for (
+    const recoveryLoop of
+    recoveryLoops
+  ) {
+    recoveryLoop.stop();
+  }
 
   logger.info(
     {
       signal,
     },
+
     'Graceful shutdown started',
   );
 
@@ -1050,8 +795,9 @@ async function shutdown(
       }
 
       socketServer.close(
-        () =>
-          resolve(),
+        () => {
+          resolve();
+        },
       );
     },
   );
@@ -1065,10 +811,13 @@ async function shutdown(
         (
           error,
         ) => {
-          if (error) {
+          if (
+            error
+          ) {
             reject(
               error,
             );
+
             return;
           }
 
@@ -1094,15 +843,17 @@ for (
 ) {
   process.on(
     signal,
+
     () => {
       void shutdown(
         signal,
       )
         .then(
-          () =>
+          () => {
             process.exit(
               0,
-            ),
+            );
+          },
         )
         .catch(
           (
@@ -1112,8 +863,10 @@ for (
             logger.fatal(
               {
                 error,
+
                 signal,
               },
+
               'Graceful shutdown failed',
             );
 
