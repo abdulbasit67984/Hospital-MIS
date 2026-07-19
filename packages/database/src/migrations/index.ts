@@ -66,6 +66,18 @@ import {
   laboratoryFoundation,
 } from './016-laboratory-foundation.js';
 
+import {
+  radiologyFoundation,
+} from './017-radiology-foundation.js';
+
+import {
+  radiologyImagingOperations,
+} from './018-radiology-imaging-operations.js';
+
+import {
+  radiologyReportingFoundation,
+} from './019-radiology-reporting.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -83,81 +95,59 @@ export const migrations = [
   clinicalReferralsFoundation,
   formularyPrescriptionsFoundation,
   laboratoryFoundation,
+  radiologyFoundation,
+  radiologyImagingOperations,
+  radiologyReportingFoundation,
 ] as const;
 
 export async function runMigrations(
-  database:
-    Db,
+  database: Db,
 ): Promise<void> {
   await database
-    .collection(
-      '_migrations',
-    )
+    .collection('_migrations')
     .createIndex(
       {
-        id:
-          1,
+        id: 1,
       },
       {
-        unique:
-          true,
+        unique: true,
       },
     );
 
-  const applied =
-    new Set(
-      (
-        await database
-          .collection(
-            '_migrations',
-          )
-          .find({})
-          .project({
-            id:
-              1,
-          })
-          .toArray()
-      ).map(
-        (
-          record,
-        ) =>
-          String(
-            record[
-              'id'
-            ],
-          ),
-      ),
-    );
+  const applied = new Set(
+    (
+      await database
+        .collection('_migrations')
+        .find({})
+        .project({
+          id: 1,
+        })
+        .toArray()
+    ).map((record) =>
+      String(record['id']),
+    ),
+  );
 
-  for (
-    const migration of
-    migrations
-  ) {
-    if (
-      applied.has(
-        migration.id,
-      )
-    ) {
+  for (const migration of migrations) {
+    if (applied.has(migration.id)) {
       continue;
     }
 
-    await migration.up(
-      database,
-    );
+    await migration.up(database);
 
     await database
-      .collection(
-        '_migrations',
-      )
+      .collection('_migrations')
       .insertOne({
-        id:
-          migration.id,
-
+        id: migration.id,
         description:
           migration.description,
-
-        appliedAt:
-          new Date(),
+        appliedAt: new Date(),
       });
   }
 }
+
+export {
+  radiologyReportingCollections,
+  radiologyReportingFoundation,
+  radiologyReportingValidators,
+} from './019-radiology-reporting.js';

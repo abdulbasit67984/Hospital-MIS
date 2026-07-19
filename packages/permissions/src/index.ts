@@ -61,11 +61,37 @@ export const permissionKeys = [
   'laboratory.critical_results.notify',
   'laboratory.critical_results.acknowledge',
 
+  'radiology.catalog.read',
+  'radiology.catalog.manage',
+
   'radiology.orders.read',
+  'radiology.orders.create',
   'radiology.orders.manage',
+  'radiology.orders.cancel',
+
+  'radiology.schedules.read',
+  'radiology.schedules.manage',
+
+  'radiology.safety_screening.read',
+  'radiology.safety_screening.manage',
+
+  'radiology.examinations.read',
+  'radiology.examinations.manage',
+
+  'radiology.studies.read',
+  'radiology.studies.manage',
+
+  'radiology.reports.read',
   'radiology.reports.enter',
+  'radiology.reports.review',
   'radiology.reports.verify',
   'radiology.reports.amend',
+  'radiology.reports.publish',
+  'radiology.reports.withdraw',
+  'radiology.reports.print',
+
+  'radiology.critical_findings.notify',
+  'radiology.critical_findings.acknowledge',
 
   'admissions.read',
   'admissions.create',
@@ -288,9 +314,7 @@ function sensitivityFor(
     key.startsWith('prescriptions.') ||
     key === 'formulary.manage' ||
     key.startsWith('laboratory.') ||
-    key.startsWith(
-      'radiology.reports.',
-    ) ||
+    key.startsWith('radiology.') ||
     key.startsWith('identity.') ||
     key.startsWith('facilities.') ||
     key.startsWith('departments.') ||

@@ -147,181 +147,145 @@ import {
 } from './laboratory-critical-result-communication.model.js';
 
 import {
+  radiologyModalitySchema,
+  radiologyProcedureSchema,
+} from './radiology-catalog.model.js';
+
+import {
+  radiologyOrderItemSchema,
+  radiologyOrderItemStatusHistorySchema,
+  radiologyOrderSchema,
+  radiologyOrderStatusHistorySchema,
+} from './radiology-order.model.js';
+
+import {
+  radiologyAppointmentSchema,
+  radiologyExaminationSchema,
+  radiologyImagingSeriesSchema,
+  radiologyImagingStudySchema,
+  radiologyResourceReservationSchema,
+  radiologyResourceSchema,
+  radiologySafetyScreeningSchema,
+} from './radiology-operations.model.js';
+
+import {
+  radiologyCriticalFindingCommunicationSchema,
+  radiologyReportSchema,
+  radiologyReportVersionSchema,
+} from './radiology-report.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
 export const patientGuardianSchemas = {
-  patients:
-    patientSchema,
-
-  patientIdentifiers:
-    patientIdentifierSchema,
-
-  guardians:
-    guardianSchema,
-
-  patientGuardians:
-    patientGuardianSchema,
-
-  patientContacts:
-    patientContactSchema,
-
-  patientAddresses:
-    patientAddressSchema,
-
-  patientAlerts:
-    patientAlertSchema,
-
-  patientMerges:
-    patientMergeSchema,
+  patients: patientSchema,
+  patientIdentifiers: patientIdentifierSchema,
+  guardians: guardianSchema,
+  patientGuardians: patientGuardianSchema,
+  patientContacts: patientContactSchema,
+  patientAddresses: patientAddressSchema,
+  patientAlerts: patientAlertSchema,
+  patientMerges: patientMergeSchema,
 } as const;
 
 export const registrationQueueSchemas = {
-  opdClinics:
-    opdClinicSchema,
-
-  servicePoints:
-    servicePointSchema,
-
-  serviceCounters:
-    serviceCounterSchema,
-
-  registrations:
-    registrationSchema,
-
-  opdVisits:
-    opdVisitSchema,
-
-  queueDefinitions:
-    queueDefinitionSchema,
-
-  queueTokens:
-    queueTokenSchema,
-
-  queueStatusHistories:
-    queueStatusHistorySchema,
+  opdClinics: opdClinicSchema,
+  servicePoints: servicePointSchema,
+  serviceCounters: serviceCounterSchema,
+  registrations: registrationSchema,
+  opdVisits: opdVisitSchema,
+  queueDefinitions: queueDefinitionSchema,
+  queueTokens: queueTokenSchema,
+  queueStatusHistories: queueStatusHistorySchema,
 } as const;
 
 export const clinicalEmrSchemas = {
-  encounters:
-    encounterSchema,
-
+  encounters: encounterSchema,
   encounterStatusHistories:
     encounterStatusHistorySchema,
-
-  clinicalNotes:
-    clinicalNoteSchema,
-
-  clinicalNoteVersions:
-    clinicalNoteVersionSchema,
-
-  diagnoses:
-    diagnosisSchema,
-
-  encounterDiagnoses:
-    encounterDiagnosisSchema,
-
-  patientProblems:
-    patientProblemSchema,
-
-  patientProblemVersions:
-    patientProblemVersionSchema,
-
-  allergies:
-    allergySchema,
-
-  patientAllergies:
-    patientAllergySchema,
-
-  patientAllergyVersions:
-    patientAllergyVersionSchema,
-
-  clinicalReferrals:
-    clinicalReferralSchema,
-
-  vitalSigns:
-    vitalSignSchema,
+  clinicalNotes: clinicalNoteSchema,
+  clinicalNoteVersions: clinicalNoteVersionSchema,
+  diagnoses: diagnosisSchema,
+  encounterDiagnoses: encounterDiagnosisSchema,
+  patientProblems: patientProblemSchema,
+  patientProblemVersions: patientProblemVersionSchema,
+  allergies: allergySchema,
+  patientAllergies: patientAllergySchema,
+  patientAllergyVersions: patientAllergyVersionSchema,
+  clinicalReferrals: clinicalReferralSchema,
+  vitalSigns: vitalSignSchema,
 } as const;
 
 export const formularyPrescriptionSchemas = {
-  medicines:
-    medicineSchema,
-
-  medicineForms:
-    medicineFormSchema,
-
-  medicineRoutes:
-    medicineRouteSchema,
-
-  unitsOfMeasure:
-    unitOfMeasureSchema,
-
-  medicineStrengths:
-    medicineStrengthSchema,
-
+  medicines: medicineSchema,
+  medicineForms: medicineFormSchema,
+  medicineRoutes: medicineRouteSchema,
+  unitsOfMeasure: unitOfMeasureSchema,
+  medicineStrengths: medicineStrengthSchema,
   prescriptionFrequencies:
     prescriptionFrequencySchema,
-
-  formularyItems:
-    formularyItemSchema,
-
-  prescriptions:
-    prescriptionSchema,
-
-  prescriptionItems:
-    prescriptionItemSchema,
-
+  formularyItems: formularyItemSchema,
+  prescriptions: prescriptionSchema,
+  prescriptionItems: prescriptionItemSchema,
   prescriptionSafetyWarnings:
     prescriptionSafetyWarningSchema,
-
   prescriptionStatusHistories:
     prescriptionStatusHistorySchema,
 } as const;
 
 export const laboratorySchemas = {
-  labTestCategories:
-    labTestCategorySchema,
-
-  labTests:
-    labTestSchema,
-
-  labOrders:
-    labOrderSchema,
-
-  labOrderItems:
-    labOrderItemSchema,
-
+  labTestCategories: labTestCategorySchema,
+  labTests: labTestSchema,
+  labOrders: labOrderSchema,
+  labOrderItems: labOrderItemSchema,
   labOrderStatusHistories:
     labOrderStatusHistorySchema,
-
-  labSpecimens:
-    labSpecimenSchema,
-
+  labSpecimens: labSpecimenSchema,
   labSpecimenStatusHistories:
     labSpecimenStatusHistorySchema,
-
-  labResults:
-    labResultSchema,
-
-  labResultVersions:
-    labResultVersionSchema,
-
+  labResults: labResultSchema,
+  labResultVersions: labResultVersionSchema,
   labCriticalResultCommunications:
     labCriticalResultCommunicationSchema,
+} as const;
+
+export const radiologySchemas = {
+  radiologyModalities: radiologyModalitySchema,
+  radiologyProcedures: radiologyProcedureSchema,
+  radiologyOrders: radiologyOrderSchema,
+  radiologyOrderItems: radiologyOrderItemSchema,
+  radiologyOrderStatusHistories:
+    radiologyOrderStatusHistorySchema,
+  radiologyOrderItemStatusHistories:
+    radiologyOrderItemStatusHistorySchema,
+  radiologyResources: radiologyResourceSchema,
+  radiologyAppointments: radiologyAppointmentSchema,
+  radiologyResourceReservations:
+    radiologyResourceReservationSchema,
+  radiologySafetyScreenings:
+    radiologySafetyScreeningSchema,
+  radiologyExaminations: radiologyExaminationSchema,
+  radiologyImagingStudies:
+    radiologyImagingStudySchema,
+  radiologyImagingSeries:
+    radiologyImagingSeriesSchema,
+  radiologyReports: radiologyReportSchema,
+  radiologyReportVersions:
+    radiologyReportVersionSchema,
+  radiologyCriticalFindingCommunications:
+    radiologyCriticalFindingCommunicationSchema,
 } as const;
 
 function specFor(
   name: HospitalCollectionName,
 ) {
-  const spec =
-    collectionSpecs.find(
-      (candidate) =>
-        candidate.name === name,
-    );
+  const spec = collectionSpecs.find(
+    (candidate) =>
+      candidate.name === name,
+  );
 
-  if (
-    spec === undefined
-  ) {
+  if (spec === undefined) {
     throw new Error(
       `Collection specification not found for ${name}`,
     );
@@ -338,9 +302,7 @@ export function schemaForCollection(
       name as keyof typeof auditSchemas
     ];
 
-  if (
-    audit !== undefined
-  ) {
+  if (audit !== undefined) {
     return audit;
   }
 
@@ -349,9 +311,7 @@ export function schemaForCollection(
       name as keyof typeof accessControlSchemas
     ];
 
-  if (
-    accessControl !== undefined
-  ) {
+  if (accessControl !== undefined) {
     return accessControl;
   }
 
@@ -360,9 +320,7 @@ export function schemaForCollection(
       name as keyof typeof authSchemas
     ];
 
-  if (
-    auth !== undefined
-  ) {
+  if (auth !== undefined) {
     return auth;
   }
 
@@ -372,8 +330,7 @@ export function schemaForCollection(
     ];
 
   if (
-    facilityConfiguration !==
-    undefined
+    facilityConfiguration !== undefined
   ) {
     return facilityConfiguration;
   }
@@ -383,9 +340,7 @@ export function schemaForCollection(
       name as keyof typeof patientGuardianSchemas
     ];
 
-  if (
-    patientGuardian !== undefined
-  ) {
+  if (patientGuardian !== undefined) {
     return patientGuardian;
   }
 
@@ -394,9 +349,7 @@ export function schemaForCollection(
       name as keyof typeof registrationQueueSchemas
     ];
 
-  if (
-    registrationQueue !== undefined
-  ) {
+  if (registrationQueue !== undefined) {
     return registrationQueue;
   }
 
@@ -405,9 +358,7 @@ export function schemaForCollection(
       name as keyof typeof clinicalEmrSchemas
     ];
 
-  if (
-    clinicalEmr !== undefined
-  ) {
+  if (clinicalEmr !== undefined) {
     return clinicalEmr;
   }
 
@@ -417,8 +368,7 @@ export function schemaForCollection(
     ];
 
   if (
-    formularyPrescription !==
-    undefined
+    formularyPrescription !== undefined
   ) {
     return formularyPrescription;
   }
@@ -428,10 +378,17 @@ export function schemaForCollection(
       name as keyof typeof laboratorySchemas
     ];
 
-  if (
-    laboratory !== undefined
-  ) {
+  if (laboratory !== undefined) {
     return laboratory;
+  }
+
+  const radiology =
+    radiologySchemas[
+      name as keyof typeof radiologySchemas
+    ];
+
+  if (radiology !== undefined) {
+    return radiology;
   }
 
   const critical =
@@ -439,9 +396,7 @@ export function schemaForCollection(
       name as keyof typeof criticalSchemas
     ];
 
-  if (
-    critical !== undefined
-  ) {
+  if (critical !== undefined) {
     return critical;
   }
 
@@ -449,58 +404,36 @@ export function schemaForCollection(
     specFor(name).facilityScoped
       ? commonFields
       : Object.fromEntries(
-          Object.entries(
-            commonFields,
-          ).filter(
+          Object.entries(commonFields).filter(
             ([key]) =>
-              key !==
-              'facilityId',
+              key !== 'facilityId',
           ),
         );
 
-  const schema =
-    new Schema(
-      {
-        ...common,
-
-        data: {
-          type:
-            Schema.Types.Mixed,
-
-          required:
-            true,
-
-          default:
-            {},
-        },
+  const schema = new Schema(
+    {
+      ...common,
+      data: {
+        type: Schema.Types.Mixed,
+        required: true,
+        default: {},
       },
+    },
+    {
+      collection: name,
+      strict: true,
+      versionKey: false,
+    },
+  );
 
-      {
-        collection:
-          name,
-
-        strict:
-          true,
-
-        versionKey:
-          false,
-      },
-    );
-
-  if (
-    specFor(name).facilityScoped
-  ) {
+  if (specFor(name).facilityScoped) {
     schema.index({
-      facilityId:
-        1,
-
-      createdAt:
-        -1,
+      facilityId: 1,
+      createdAt: -1,
     });
   } else {
     schema.index({
-      createdAt:
-        -1,
+      createdAt: -1,
     });
   }
 
@@ -516,17 +449,12 @@ export function registerAllModels(
     collectionSpecs.map(
       (spec) => [
         spec.name,
-
-        connection.models[
-          spec.name
-        ] ??
+        connection.models[spec.name] ??
           connection.model(
             spec.name,
-
             schemaForCollection(
               spec.name,
             ),
-
             spec.name,
           ),
       ],

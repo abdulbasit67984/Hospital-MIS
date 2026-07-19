@@ -16,12 +16,10 @@ let connectionPromise:
   | undefined;
 
 export async function connectDatabase(
-  options:
-    DatabaseConnectionOptions,
+  options: DatabaseConnectionOptions,
 ): Promise<typeof mongoose> {
   if (
-    mongoose.connection
-      .readyState === 1
+    mongoose.connection.readyState === 1
   ) {
     return mongoose;
   }
@@ -59,27 +57,23 @@ export async function connectDatabase(
   }
 }
 
-export async function disconnectDatabase():
-  Promise<void> {
+export async function disconnectDatabase(): Promise<void> {
   connectionPromise =
     undefined;
 
   if (
-    mongoose.connection
-      .readyState !== 0
+    mongoose.connection.readyState !== 0
   ) {
     await mongoose.disconnect();
   }
 }
 
-export async function pingDatabase():
-  Promise<DependencyHealth> {
+export async function pingDatabase(): Promise<DependencyHealth> {
   const database =
     mongoose.connection.db;
 
   if (
-    mongoose.connection
-      .readyState !== 1 ||
+    mongoose.connection.readyState !== 1 ||
     database === undefined
   ) {
     throw new Error(
@@ -100,15 +94,12 @@ export async function pingDatabase():
       'up',
 
     latencyMs:
-      Date.now() -
-      startedAt,
+      Date.now() - startedAt,
   };
 }
 
-export function databaseReadyState():
-  number {
-  return mongoose.connection
-    .readyState;
+export function databaseReadyState(): number {
+  return mongoose.connection.readyState;
 }
 
 export function nativeDatabase() {
@@ -158,6 +149,7 @@ export * from './models/registration-queue.types.js';
 export * from './models/clinical-emr.types.js';
 export * from './models/formulary-prescription.types.js';
 export * from './models/laboratory.types.js';
+export * from './models/radiology.types.js';
 export * from './models/registry.js';
 
 export * from './models/allergy.model.js';
@@ -173,6 +165,10 @@ export * from './models/laboratory-order.model.js';
 export * from './models/laboratory-specimen.model.js';
 export * from './models/laboratory-result.model.js';
 export * from './models/laboratory-critical-result-communication.model.js';
+export * from './models/radiology-catalog.model.js';
+export * from './models/radiology-order.model.js';
+export * from './models/radiology-operations.model.js';
+export * from './models/radiology-report.model.js';
 export * from './models/department.model.js';
 export * from './models/facility.model.js';
 export * from './models/guardian.model.js';
