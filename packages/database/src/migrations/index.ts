@@ -62,6 +62,10 @@ import {
   formularyPrescriptionsFoundation,
 } from './015-formulary-prescriptions-foundation.js';
 
+import {
+  laboratoryFoundation,
+} from './016-laboratory-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -78,6 +82,7 @@ export const migrations = [
   clinicalVitalSignsFoundation,
   clinicalReferralsFoundation,
   formularyPrescriptionsFoundation,
+  laboratoryFoundation,
 ] as const;
 
 export async function runMigrations(

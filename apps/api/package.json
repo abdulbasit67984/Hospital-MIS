@@ -15,6 +15,8 @@
     "seed:patient-guardian-access": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-patient-guardian-access.ts",
     "seed:registration-queue-access": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-registration-queue-access.ts",
     "seed:formulary-prescription-access": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-formulary-prescription-access.ts",
+    "seed:laboratory-access": "cross-env NODE_OPTIONS=--conditions=development tsx src/scripts/seed-laboratory-access.ts",
+    "test:laboratory": "vitest run src/modules/laboratory/tests",
     "test:facility-integration": "cross-env RUN_FACILITY_CONFIGURATION_INTEGRATION_TESTS=true vitest run --config ../../vitest.integration.config.ts src/modules/facility/tests/facility-configuration.integration.test.ts",
     "test:formulary-prescriptions": "vitest run src/modules/formulary-prescriptions/tests"
   },

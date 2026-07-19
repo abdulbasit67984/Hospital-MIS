@@ -122,6 +122,31 @@ import {
 } from './prescription.model.js';
 
 import {
+  labTestCategorySchema,
+  labTestSchema,
+} from './laboratory-catalog.model.js';
+
+import {
+  labOrderItemSchema,
+  labOrderSchema,
+  labOrderStatusHistorySchema,
+} from './laboratory-order.model.js';
+
+import {
+  labSpecimenSchema,
+  labSpecimenStatusHistorySchema,
+} from './laboratory-specimen.model.js';
+
+import {
+  labResultSchema,
+  labResultVersionSchema,
+} from './laboratory-result.model.js';
+
+import {
+  labCriticalResultCommunicationSchema,
+} from './laboratory-critical-result-communication.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -253,6 +278,38 @@ export const formularyPrescriptionSchemas = {
     prescriptionStatusHistorySchema,
 } as const;
 
+export const laboratorySchemas = {
+  labTestCategories:
+    labTestCategorySchema,
+
+  labTests:
+    labTestSchema,
+
+  labOrders:
+    labOrderSchema,
+
+  labOrderItems:
+    labOrderItemSchema,
+
+  labOrderStatusHistories:
+    labOrderStatusHistorySchema,
+
+  labSpecimens:
+    labSpecimenSchema,
+
+  labSpecimenStatusHistories:
+    labSpecimenStatusHistorySchema,
+
+  labResults:
+    labResultSchema,
+
+  labResultVersions:
+    labResultVersionSchema,
+
+  labCriticalResultCommunications:
+    labCriticalResultCommunicationSchema,
+} as const;
+
 function specFor(
   name: HospitalCollectionName,
 ) {
@@ -364,6 +421,17 @@ export function schemaForCollection(
     undefined
   ) {
     return formularyPrescription;
+  }
+
+  const laboratory =
+    laboratorySchemas[
+      name as keyof typeof laboratorySchemas
+    ];
+
+  if (
+    laboratory !== undefined
+  ) {
+    return laboratory;
   }
 
   const critical =
