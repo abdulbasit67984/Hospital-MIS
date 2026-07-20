@@ -48,6 +48,10 @@ import {
 } from './infrastructure/operational-infrastructure.js';
 
 import {
+  createNursingMedicationInfrastructure,
+} from './infrastructure/nursing-medication-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -100,6 +104,10 @@ import {
 import {
   createPatientModule,
 } from './modules/patient/index.js';
+
+import {
+  createNursingMedicationModule,
+} from './modules/nursing-medication/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -324,6 +332,49 @@ const formularyPrescriptionInfrastructure =
     },
   });
 
+const nursingMedicationInfrastructure =
+  createNursingMedicationInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+
+    clinicalEmrApplication:
+      clinicalEmrInfrastructure.application,
+
+    async publishRealtime(
+      message,
+    ) {
+      socketServer?.emit(
+        message.eventType,
+        {
+          facilityId:
+            message.facilityId,
+
+          admissionId:
+            message.admissionId,
+
+          patientId:
+            message.patientId,
+
+          wardId:
+            message.wardId,
+
+          entityId:
+            message.entityId,
+
+          payload:
+            message.payload,
+        },
+      );
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -423,6 +474,18 @@ const formularyPrescriptionModule =
       authorizationModule.service,
   });
 
+const nursingMedicationModule =
+  createNursingMedicationModule({
+    application:
+      nursingMedicationInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -485,6 +548,12 @@ const app =
       application.use(
         '/api/v1/formulary-prescriptions',
         formularyPrescriptionModule.router,
+      );
+
+
+      application.use(
+        '/api/v1/nursing-medication',
+        nursingMedicationModule.router,
       );
     },
   });
@@ -671,6 +740,19 @@ const recoveryLoops = [
 
     logger,
   }),
+
+  startRecoveryLoop({
+    name:
+      'Nursing and medication administration',
+
+    workerId:
+      `api-nursing-medication-recovery:${process.pid}`,
+
+    recovery:
+      nursingMedicationInfrastructure.recovery,
+
+    logger,
+  }),
 ];
 
 void dispatchOutboxBatch();
@@ -714,6 +796,9 @@ httpServer.listen(
         formularyPrescriptionModule:
           'mounted',
 
+        nursingMedicationModule:
+          'mounted',
+
         transactionRecovery:
           'enabled',
 
@@ -731,6 +816,12 @@ httpServer.listen(
 
         formularyPrescriptionSnapshotEncryption:
           'enabled',
+
+        nursingMedicationSnapshotEncryption:
+          'enabled',
+
+        medicationAdministrationInventoryMutation:
+          'disabled',
 
         prescriptionInventoryMutation:
           'disabled',

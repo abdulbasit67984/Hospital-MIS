@@ -57,15 +57,15 @@ import {
 import {
   ChangeEncounterDiagnosisStatusWorkflow,
   RecordEncounterDiagnosisWorkflow,
-} from '../workflows/diagnosis-command.workflows.js';
+} from '../services/workflows/diagnosis-command.workflows.js';
 
 import {
   RecordPatientAllergyWorkflow,
-} from '../workflows/patient-allergy-command.workflows.js';
+} from '../services/workflows/patient-allergy-command.workflows.js';
 
 import {
   CreatePatientProblemWorkflow,
-} from '../workflows/patient-problem-command.workflows.js';
+} from '../services/workflows/patient-problem-command.workflows.js';
 
 function oid(): ObjectId {
   return new ObjectId();

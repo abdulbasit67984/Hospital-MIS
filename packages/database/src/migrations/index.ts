@@ -89,6 +89,9 @@ import {
 import {
   inpatientDischargeMigration,
 } from './022-inpatient-discharge.js';
+import {
+  nursingMedicationFoundation,
+} from './023-nursing-medication-foundation.js';
 
 export const migrations = [
   initializeDatabase,

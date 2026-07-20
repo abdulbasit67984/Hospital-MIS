@@ -40,7 +40,7 @@ import {
   CorrectVitalSignsWorkflow,
   RecordStructuredEncounterSectionWorkflow,
   RecordVitalSignsWorkflow,
-} from '../workflows/structured-section-and-vital-sign.workflows.js';
+} from '../services/workflows/structured-section-and-vital-sign.workflows.js';
 
 function actor(): ClinicalEmrActorContext {
   return {

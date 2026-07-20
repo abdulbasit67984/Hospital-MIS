@@ -1,4 +1,4 @@
-mport mongoose, { Schema, type InferSchemaType, type Model } from 'mongoose';
+import mongoose, { Schema, type InferSchemaType, type Model } from 'mongoose';
 
 export const clinicalReferralTypeValues = [
   'INTERNAL_CONSULTATION',

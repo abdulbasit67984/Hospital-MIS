@@ -568,3 +568,13 @@ export function registerAllModels(
     ),
   );
 }
+import {
+  intakeOutputEntrySchema,
+  nursingAssessmentSchema,
+  nursingAssessmentVersionSchema,
+  nursingCarePlanSchema,
+  nursingCarePlanVersionSchema,
+  nursingDeviceObservationSchema,
+  nursingDeviceSchema,
+  nursingTaskSchema,
+} from './nursing-medication.model.js';

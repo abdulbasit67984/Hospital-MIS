@@ -282,65 +282,65 @@ import {
 
 import {
   ChangeEncounterStatusWorkflow,
-} from './workflows/change-encounter-status.workflow.js';
+} from './services/workflows/change-encounter-status.workflow.js';
 
 import {
   AddClinicalNoteAddendumWorkflow,
   CorrectClinicalNoteWorkflow,
   EnterClinicalNoteInErrorWorkflow,
-} from './workflows/clinical-note-correction.workflows.js';
+} from './services/workflows/clinical-note-correction.workflows.js';
 
 import {
   CreateClinicalNoteWorkflow,
   UpdateClinicalNoteDraftWorkflow,
-} from './workflows/clinical-note-draft.workflows.js';
+} from './services/workflows/clinical-note-draft.workflows.js';
 
 import {
   AmendClinicalNoteWorkflow,
   FinalizeClinicalNoteWorkflow,
-} from './workflows/clinical-note-finalization.workflows.js';
+} from './services/workflows/clinical-note-finalization.workflows.js';
 
 import {
   CorrectEncounterWorkflow,
-} from './workflows/correct-encounter.workflow.js';
+} from './services/workflows/correct-encounter.workflow.js';
 
 import {
   CreateEncounterWorkflow,
-} from './workflows/create-encounter.workflow.js';
+} from './services/workflows/create-encounter.workflow.js';
 
 import {
   ChangeEncounterDiagnosisStatusWorkflow,
   CorrectEncounterDiagnosisWorkflow,
   RecordEncounterDiagnosisWorkflow,
   VerifyEncounterDiagnosisWorkflow,
-} from './workflows/diagnosis-command.workflows.js';
+} from './services/workflows/diagnosis-command.workflows.js';
 
 import {
   CorrectPatientAllergyWorkflow,
   RecordPatientAllergyWorkflow,
   UpdatePatientAllergyWorkflow,
-} from './workflows/patient-allergy-command.workflows.js';
+} from './services/workflows/patient-allergy-command.workflows.js';
 
 import {
   CorrectPatientProblemWorkflow,
   CreatePatientProblemWorkflow,
   UpdatePatientProblemWorkflow,
-} from './workflows/patient-problem-command.workflows.js';
+} from './services/workflows/patient-problem-command.workflows.js';
 
 import {
   ReassignEncounterWorkflow,
-} from './workflows/reassign-encounter.workflow.js';
+} from './services/workflows/reassign-encounter.workflow.js';
 
 import {
   SignEncounterWorkflow,
-} from './workflows/sign-encounter.workflow.js';
+} from './services/workflows/sign-encounter.workflow.js';
 
 import {
   CorrectVitalSignsWorkflow,
   EnterVitalSignsInErrorWorkflow,
   RecordStructuredEncounterSectionWorkflow,
   RecordVitalSignsWorkflow,
-} from './workflows/structured-section-and-vital-sign.workflows.js';
+} from './services/workflows/structured-section-and-vital-sign.workflows.js';
 
 const activeReferralStatuses = new Set([
   'REQUESTED',

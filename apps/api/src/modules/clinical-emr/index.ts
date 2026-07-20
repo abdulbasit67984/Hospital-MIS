@@ -28,33 +28,33 @@ export * from './services/clinical-emr-sensitive-read-auditor.service.js';
 
 export * from './services/clinical-emr-opd-lifecycle.service.js';
 
-export * from './workflows/change-encounter-status.workflow.js';
-export * from './workflows/correct-encounter.workflow.js';
-export * from './workflows/create-encounter.workflow.js';
-export * from './workflows/reassign-encounter.workflow.js';
-export * from './workflows/sign-encounter.workflow.js';
+export * from './services/workflows/change-encounter-status.workflow.js';
+export * from './services/workflows/correct-encounter.workflow.js';
+export * from './services/workflows/create-encounter.workflow.js';
+export * from './services/workflows/reassign-encounter.workflow.js';
+export * from './services/workflows/sign-encounter.workflow.js';
 
 export {
   ClinicalNoteAttributionService,
 } from './services/clinical-note-attribution.service.js';
 export * from './services/clinical-note-command.service.js';
-export * from './workflows/clinical-note-draft.workflows.js';
-export * from './workflows/clinical-note-finalization.workflows.js';
-export * from './workflows/clinical-note-correction.workflows.js';
+export * from './services/workflows/clinical-note-draft.workflows.js';
+export * from './services/workflows/clinical-note-finalization.workflows.js';
+export * from './services/workflows/clinical-note-correction.workflows.js';
 
 export * from './services/clinical-list-command.service.js';
 export * from './services/diagnosis-command.service.js';
 export * from './services/patient-problem-command.service.js';
 export * from './services/patient-allergy-command.service.js';
 
-export * from './workflows/diagnosis-command.workflows.js';
-export * from './workflows/patient-problem-command.workflows.js';
-export * from './workflows/patient-allergy-command.workflows.js';
+export * from './services/workflows/diagnosis-command.workflows.js';
+export * from './services/workflows/patient-problem-command.workflows.js';
+export * from './services/workflows/patient-allergy-command.workflows.js';
 
 export * from './repositories/vital-sign.repository.js';
 export * from './services/structured-encounter-section.service.js';
 export * from './services/vital-sign-command.service.js';
-export * from './workflows/structured-section-and-vital-sign.workflows.js';
+export * from './services/workflows/structured-section-and-vital-sign.workflows.js';
 
 export * from './clinical-emr.http-contracts.js';
 export * from './clinical-emr.module.js';

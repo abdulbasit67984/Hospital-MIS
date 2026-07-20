@@ -201,3 +201,5 @@ export * from './models/inpatient-bed-operation.model.js';
 export * from './migrations/types.js';
 export * from './migrations/index.js';
 export * from './models/inpatient-discharge.model.js';
+export * from './models/nursing-medication.types.js';
+export * from './models/nursing-medication.model.js';

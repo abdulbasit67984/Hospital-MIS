@@ -31,16 +31,16 @@ import {
 import {
   CreateClinicalNoteWorkflow,
   UpdateClinicalNoteDraftWorkflow,
-} from '../workflows/clinical-note-draft.workflows.js';
+} from '../services/workflows/clinical-note-draft.workflows.js';
 
 import {
   FinalizeClinicalNoteWorkflow,
-} from '../workflows/clinical-note-finalization.workflows.js';
+} from '../services/workflows/clinical-note-finalization.workflows.js';
 
 import {
   CorrectClinicalNoteWorkflow,
   EnterClinicalNoteInErrorWorkflow,
-} from '../workflows/clinical-note-correction.workflows.js';
+} from '../services/workflows/clinical-note-correction.workflows.js';
 
 function oid(): ObjectId {
   return new ObjectId();

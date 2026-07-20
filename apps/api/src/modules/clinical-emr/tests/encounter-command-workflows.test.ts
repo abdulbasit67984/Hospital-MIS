@@ -27,11 +27,11 @@ import {
 
 import {
   ChangeEncounterStatusWorkflow,
-} from '../workflows/change-encounter-status.workflow.js';
+} from '../services/workflows/change-encounter-status.workflow.js';
 
 import {
   SignEncounterWorkflow,
-} from '../workflows/sign-encounter.workflow.js';
+} from '../services/workflows/sign-encounter.workflow.js';
 
 function encounter(
   overrides: Partial<EncounterRecord> = {},

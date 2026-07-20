@@ -266,6 +266,32 @@ const collectionSpecRows = [
   ['consultantRevenueSummaries', 'reporting', true, 'standard', 1],
   ['panelReceivableSnapshots', 'reporting', true, 'standard', 1],
   ['inventoryValuationSnapshots', 'reporting', true, 'standard', 1],
+    ['nursingAssessments', 'inpatient', true, 'standard', 1],
+  [
+    'nursingAssessmentVersions',
+    'inpatient',
+    true,
+    'immutable',
+    1,
+  ],
+  ['nursingCarePlans', 'inpatient', true, 'standard', 1],
+  [
+    'nursingCarePlanVersions',
+    'inpatient',
+    true,
+    'immutable',
+    1,
+  ],
+  ['nursingTasks', 'inpatient', true, 'standard', 1],
+  ['intakeOutputEntries', 'inpatient', true, 'standard', 1],
+  ['nursingDevices', 'inpatient', true, 'standard', 1],
+  [
+    'nursingDeviceObservations',
+    'inpatient',
+    true,
+    'immutable',
+    1,
+  ],
 ] as const satisfies readonly CollectionSpecRow[];
 
 export type HospitalCollectionName =
