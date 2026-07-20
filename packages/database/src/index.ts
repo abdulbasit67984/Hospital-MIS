@@ -151,7 +151,8 @@ export * from './models/formulary-prescription.types.js';
 export * from './models/laboratory.types.js';
 export * from './models/radiology.types.js';
 export * from './models/registry.js';
-
+export * from './models/inpatient-nursing.types.js';
+export * from './models/inpatient-nursing.model.js';
 export * from './models/allergy.model.js';
 export * from './models/clinical-note.model.js';
 export * from './models/clinical-referral.model.js';
@@ -190,6 +191,13 @@ export * from './models/role-permission.model.js';
 export * from './models/staff.model.js';
 export * from './models/user.model.js';
 export * from './models/user-role.model.js';
-
+export * from './models/inpatient.types.js';
+export * from './models/inpatient-schema-helpers.js';
+export * from './models/inpatient-location.model.js';
+export * from './models/bed-rate.model.js';
+export * from './models/admission-recommendation.model.js';
+export * from './models/admission.model.js';
+export * from './models/inpatient-bed-operation.model.js';
 export * from './migrations/types.js';
 export * from './migrations/index.js';
+export * from './models/inpatient-discharge.model.js';

@@ -78,6 +78,18 @@ import {
   radiologyReportingFoundation,
 } from './019-radiology-reporting.js';
 
+import {
+  inpatientFoundation,
+} from './020-inpatient-foundation.js';
+
+import {
+  inpatientNursingMigration,
+} from './021-inpatient-nursing.js';
+
+import {
+  inpatientDischargeMigration,
+} from './022-inpatient-discharge.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -98,6 +110,9 @@ export const migrations = [
   radiologyFoundation,
   radiologyImagingOperations,
   radiologyReportingFoundation,
+  inpatientFoundation,
+  inpatientNursingMigration,
+  inpatientDischargeMigration,
 ] as const;
 
 export async function runMigrations(
@@ -151,3 +166,12 @@ export {
   radiologyReportingFoundation,
   radiologyReportingValidators,
 } from './019-radiology-reporting.js';
+
+export {
+  inpatientFoundation,
+  inpatientFoundationCollections,
+  inpatientFoundationValidators,
+} from './020-inpatient-foundation.js';
+
+export * from './021-inpatient-nursing.js';
+export * from './022-inpatient-discharge.js';

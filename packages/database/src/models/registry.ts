@@ -175,6 +175,43 @@ import {
 } from './radiology-report.model.js';
 
 import {
+  admissionRecommendationSchema,
+} from './admission-recommendation.model.js';
+
+import {
+  admissionSchema,
+  admissionStatusHistorySchema,
+} from './admission.model.js';
+
+import {
+  bedRateSchema,
+  bedRateVersionSchema,
+} from './bed-rate.model.js';
+
+import {
+  admissionBedAssignmentSchema,
+  bedChargeSegmentSchema,
+  bedHoldSchema,
+  bedStatusHistorySchema,
+} from './inpatient-bed-operation.model.js';
+
+import {
+  bedSchema,
+  roomSchema,
+  wardSchema,
+} from './inpatient-location.model.js';
+
+import {
+  medicationAdministrationAmendmentSchema,
+  medicationAdministrationSchema,
+  medicationScheduleSchema,
+  nursingEntryAmendmentSchema,
+  nursingNoteSchema,
+  nursingNoteVersionSchema,
+  wardHandoverSchema,
+} from './inpatient-nursing.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -275,6 +312,58 @@ export const radiologySchemas = {
     radiologyReportVersionSchema,
   radiologyCriticalFindingCommunications:
     radiologyCriticalFindingCommunicationSchema,
+} as const;
+
+export const inpatientSchemas = {
+  admissionRecommendations:
+    admissionRecommendationSchema,
+
+  wards: wardSchema,
+  rooms: roomSchema,
+  beds: bedSchema,
+  bedRates: bedRateSchema,
+
+  bedRateVersions:
+    bedRateVersionSchema,
+
+  admissions: admissionSchema,
+
+  admissionStatusHistories:
+    admissionStatusHistorySchema,
+
+  bedHolds: bedHoldSchema,
+
+  admissionBedAssignments:
+    admissionBedAssignmentSchema,
+
+  bedStatusHistories:
+    bedStatusHistorySchema,
+
+  bedChargeSegments:
+    bedChargeSegmentSchema,
+} as const;
+
+export const inpatientNursingSchemas = {
+  nursingNotes:
+    nursingNoteSchema,
+
+  nursingNoteVersions:
+    nursingNoteVersionSchema,
+
+  medicationSchedules:
+    medicationScheduleSchema,
+
+  medicationAdministrations:
+    medicationAdministrationSchema,
+
+  medicationAdministrationAmendments:
+    medicationAdministrationAmendmentSchema,
+
+  wardHandovers:
+    wardHandoverSchema,
+
+  nursingEntryAmendments:
+    nursingEntryAmendmentSchema,
 } as const;
 
 function specFor(
@@ -389,6 +478,24 @@ export function schemaForCollection(
 
   if (radiology !== undefined) {
     return radiology;
+  }
+
+  const inpatient =
+    inpatientSchemas[
+      name as keyof typeof inpatientSchemas
+    ];
+
+  if (inpatient !== undefined) {
+    return inpatient;
+  }
+
+  const inpatientNursing =
+    inpatientNursingSchemas[
+      name as keyof typeof inpatientNursingSchemas
+    ];
+
+  if (inpatientNursing !== undefined) {
+    return inpatientNursing;
   }
 
   const critical =
