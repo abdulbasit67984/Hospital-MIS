@@ -52,6 +52,10 @@ import {
 } from './infrastructure/nursing-medication-infrastructure.js';
 
 import {
+  createInventoryInfrastructure,
+} from './infrastructure/inventory-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -108,6 +112,10 @@ import {
 import {
   createNursingMedicationModule,
 } from './modules/nursing-medication/index.js';
+
+import {
+  createInventoryModule,
+} from './modules/inventory/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -375,6 +383,49 @@ const nursingMedicationInfrastructure =
     },
   });
 
+const inventoryInfrastructure =
+  createInventoryInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    async publishRealtime(
+      message,
+    ) {
+      socketServer?.emit(
+        message.eventType,
+        {
+          facilityId:
+            message.facilityId,
+
+          locationId:
+            message.locationId,
+
+          supplierId:
+            message.supplierId,
+
+          requisitionId:
+            message.requisitionId,
+
+          purchaseOrderId:
+            message.purchaseOrderId,
+
+          goodsReceiptId:
+            message.goodsReceiptId,
+
+          supplierReturnId:
+            message.supplierReturnId,
+
+          payload:
+            message.payload,
+        },
+      );
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -486,6 +537,21 @@ const nursingMedicationModule =
       authorizationModule.service,
   });
 
+const inventoryModule =
+  createInventoryModule({
+    application:
+      inventoryInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+
+    actorResolver:
+      inventoryInfrastructure.runtime.actorResolver,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -554,6 +620,11 @@ const app =
       application.use(
         '/api/v1/nursing-medication',
         nursingMedicationModule.router,
+      );
+
+      application.use(
+        '/api/v1/inventory',
+        inventoryModule.router,
       );
     },
   });
@@ -755,6 +826,8 @@ const recoveryLoops = [
   }),
 ];
 
+inventoryInfrastructure.backgroundJobs.start();
+
 void dispatchOutboxBatch();
 
 httpServer.listen(
@@ -799,10 +872,16 @@ httpServer.listen(
         nursingMedicationModule:
           'mounted',
 
+        inventoryModule:
+          'mounted',
+
         transactionRecovery:
           'enabled',
 
         outboxDispatch:
+          'enabled',
+
+        inventoryBackgroundJobs:
           'enabled',
 
         patientSensitiveSnapshotEncryption:
@@ -825,6 +904,9 @@ httpServer.listen(
 
         prescriptionInventoryMutation:
           'disabled',
+
+        inventoryDispensingMutation:
+          'enabled-through-inventory-ledger',
 
         facilityAuthenticationEnforcement:
           'enabled',
@@ -853,6 +935,8 @@ async function shutdown(
 
   shuttingDown =
     true;
+
+  inventoryInfrastructure.backgroundJobs.stop();
 
   clearInterval(
     outboxInterval,

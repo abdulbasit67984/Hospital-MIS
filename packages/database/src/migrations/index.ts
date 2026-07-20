@@ -93,6 +93,22 @@ import {
   nursingMedicationFoundation,
 } from './023-nursing-medication-foundation.js';
 
+import {
+  inventoryFoundation,
+} from './024-inventory-foundation.js';
+
+import {
+  inventoryProcurementReceiving,
+} from './025-inventory-procurement-receiving.js';
+
+import {
+  inventoryStockLedgerOperations,
+} from './026-inventory-stock-ledger-operations.js';
+
+import {
+  inventoryControlsMonitoring,
+} from './027-inventory-controls-monitoring.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -116,6 +132,11 @@ export const migrations = [
   inpatientFoundation,
   inpatientNursingMigration,
   inpatientDischargeMigration,
+  nursingMedicationFoundation,
+  inventoryFoundation,
+  inventoryProcurementReceiving,
+  inventoryStockLedgerOperations,
+  inventoryControlsMonitoring,
 ] as const;
 
 export async function runMigrations(
@@ -178,3 +199,8 @@ export {
 
 export * from './021-inpatient-nursing.js';
 export * from './022-inpatient-discharge.js';
+export * from './023-nursing-medication-foundation.js';
+export * from './024-inventory-foundation.js';
+export * from './025-inventory-procurement-receiving.js';
+export * from './026-inventory-stock-ledger-operations.js';
+export * from './027-inventory-controls-monitoring.js';

@@ -211,6 +211,69 @@ import {
   wardHandoverSchema,
 } from './inpatient-nursing.model.js';
 
+
+import {
+  intakeOutputEntrySchema,
+  nursingAssessmentSchema,
+  nursingAssessmentVersionSchema,
+  nursingCarePlanSchema,
+  nursingCarePlanVersionSchema,
+  nursingDeviceObservationSchema,
+  nursingDeviceSchema,
+  nursingTaskSchema,
+} from './nursing-medication.model.js';
+
+import {
+  inventoryCategorySchema,
+  inventoryItemSchema,
+} from './inventory-catalog.model.js';
+
+import {
+  storeLocationSchema,
+} from './inventory-location.model.js';
+
+import {
+  inventoryBatchSchema,
+  stockBalanceSchema,
+} from './inventory-stock.model.js';
+
+import {
+  supplierSchema,
+} from './supplier.model.js';
+
+import {
+  procurementApprovalHistorySchema,
+  purchaseInvoiceSchema,
+  purchaseOrderItemSchema,
+  purchaseOrderSchema,
+  purchaseRequisitionItemSchema,
+  purchaseRequisitionSchema,
+} from './inventory-procurement.model.js';
+
+import {
+  goodsReceiptItemSchema,
+  goodsReceiptSchema,
+  supplierReturnItemSchema,
+  supplierReturnSchema,
+} from './inventory-receipt.model.js';
+
+import {
+  stockMovementSchema,
+  stockReservationItemSchema,
+  stockReservationSchema,
+  stockTransferItemSchema,
+  stockTransferSchema,
+} from './inventory-operational.model.js';
+
+import {
+  physicalStockCountItemSchema,
+  physicalStockCountSchema,
+  productRecallItemSchema,
+  productRecallSchema,
+  reorderRuleSchema,
+  stockAdjustmentSchema,
+} from './inventory-control.model.js';
+
 import {
   commonFields,
 } from './common.js';
@@ -366,6 +429,57 @@ export const inpatientNursingSchemas = {
     nursingEntryAmendmentSchema,
 } as const;
 
+
+export const nursingMedicationSchemas = {
+  nursingAssessments: nursingAssessmentSchema,
+  nursingAssessmentVersions: nursingAssessmentVersionSchema,
+  nursingCarePlans: nursingCarePlanSchema,
+  nursingCarePlanVersions: nursingCarePlanVersionSchema,
+  nursingTasks: nursingTaskSchema,
+  intakeOutputEntries: intakeOutputEntrySchema,
+  nursingDevices: nursingDeviceSchema,
+  nursingDeviceObservations: nursingDeviceObservationSchema,
+} as const;
+
+export const inventoryFoundationSchemas = {
+  inventoryCategories: inventoryCategorySchema,
+  inventoryItems: inventoryItemSchema,
+  suppliers: supplierSchema,
+  storeLocations: storeLocationSchema,
+  inventoryBatches: inventoryBatchSchema,
+  stockBalances: stockBalanceSchema,
+} as const;
+
+export const inventoryProcurementSchemas = {
+  purchaseRequisitions: purchaseRequisitionSchema,
+  purchaseRequisitionItems: purchaseRequisitionItemSchema,
+  procurementApprovalHistories: procurementApprovalHistorySchema,
+  purchaseOrders: purchaseOrderSchema,
+  purchaseOrderItems: purchaseOrderItemSchema,
+  goodsReceipts: goodsReceiptSchema,
+  goodsReceiptItems: goodsReceiptItemSchema,
+  purchaseInvoices: purchaseInvoiceSchema,
+  supplierReturns: supplierReturnSchema,
+  supplierReturnItems: supplierReturnItemSchema,
+} as const;
+
+export const inventoryOperationalSchemas = {
+  stockMovements: stockMovementSchema,
+  stockTransfers: stockTransferSchema,
+  stockTransferItems: stockTransferItemSchema,
+  stockReservations: stockReservationSchema,
+  stockReservationItems: stockReservationItemSchema,
+} as const;
+
+export const inventoryControlSchemas = {
+  stockAdjustments: stockAdjustmentSchema,
+  physicalStockCounts: physicalStockCountSchema,
+  physicalStockCountItems: physicalStockCountItemSchema,
+  productRecalls: productRecallSchema,
+  productRecallItems: productRecallItemSchema,
+  reorderRules: reorderRuleSchema,
+} as const;
+
 function specFor(
   name: HospitalCollectionName,
 ) {
@@ -498,6 +612,52 @@ export function schemaForCollection(
     return inpatientNursing;
   }
 
+
+  const nursingMedication =
+    nursingMedicationSchemas[
+      name as keyof typeof nursingMedicationSchemas
+    ];
+
+  if (nursingMedication !== undefined) {
+    return nursingMedication;
+  }
+
+  const inventoryFoundation =
+    inventoryFoundationSchemas[
+      name as keyof typeof inventoryFoundationSchemas
+    ];
+
+  if (inventoryFoundation !== undefined) {
+    return inventoryFoundation;
+  }
+
+  const inventoryProcurement =
+    inventoryProcurementSchemas[
+      name as keyof typeof inventoryProcurementSchemas
+    ];
+
+  if (inventoryProcurement !== undefined) {
+    return inventoryProcurement;
+  }
+
+  const inventoryOperational =
+    inventoryOperationalSchemas[
+      name as keyof typeof inventoryOperationalSchemas
+    ];
+
+  if (inventoryOperational !== undefined) {
+    return inventoryOperational;
+  }
+
+  const inventoryControl =
+    inventoryControlSchemas[
+      name as keyof typeof inventoryControlSchemas
+    ];
+
+  if (inventoryControl !== undefined) {
+    return inventoryControl;
+  }
+
   const critical =
     criticalSchemas[
       name as keyof typeof criticalSchemas
@@ -568,13 +728,3 @@ export function registerAllModels(
     ),
   );
 }
-import {
-  intakeOutputEntrySchema,
-  nursingAssessmentSchema,
-  nursingAssessmentVersionSchema,
-  nursingCarePlanSchema,
-  nursingCarePlanVersionSchema,
-  nursingDeviceObservationSchema,
-  nursingDeviceSchema,
-  nursingTaskSchema,
-} from './nursing-medication.model.js';
