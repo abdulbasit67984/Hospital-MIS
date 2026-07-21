@@ -299,6 +299,58 @@ import {
 } from './pharmacy-return-reversal.model.js';
 
 import {
+  chargeCatalogSchema,
+  chargeCatalogVersionSchema,
+  chargeCategorySchema,
+  chargeRuleSchema,
+} from './charge-catalog.model.js';
+
+import {
+  packageEnrollmentSchema,
+  packageUtilizationSchema,
+  priceListSchema,
+  priceListVersionSchema,
+  serviceRateSchema,
+  taxCategorySchema,
+  treatmentPackageItemSchema,
+  treatmentPackageSchema,
+} from './billing-pricing-package.model.js';
+
+import {
+  accountChargeHistorySchema,
+  accountChargeSchema,
+  patientAccountSchema,
+  patientAccountStatusHistorySchema,
+} from './patient-account-charge.model.js';
+
+import {
+  creditNoteSchema,
+  debitNoteSchema,
+  discountApprovalSchema,
+  discountSchema,
+  financialApprovalRequestSchema,
+  invoiceLineSchema,
+  invoiceSchema,
+  invoiceStatusHistorySchema,
+} from './billing-invoice-adjustment.model.js';
+
+import {
+  depositSchema,
+  paymentAllocationSchema,
+  paymentIntentSchema,
+  paymentReversalSchema,
+  paymentSchema,
+  refundRequestSchema,
+  refundSchema,
+} from './billing-payment.model.js';
+
+import {
+  financialLedgerAccountSchema,
+  financialLedgerEntrySchema,
+  financialLedgerTransactionSchema,
+} from './financial-ledger.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -525,6 +577,48 @@ export const pharmacyDispensingSchemas = {
   patientReturnItems: patientReturnItemSchema,
 } as const;
 
+export const billingFoundationSchemas = {
+  chargeCategories: chargeCategorySchema,
+  taxCategories: taxCategorySchema,
+  chargeCatalog: chargeCatalogSchema,
+  chargeCatalogVersions: chargeCatalogVersionSchema,
+  chargeRules: chargeRuleSchema,
+  priceLists: priceListSchema,
+  priceListVersions: priceListVersionSchema,
+  serviceRates: serviceRateSchema,
+  treatmentPackages: treatmentPackageSchema,
+  treatmentPackageItems: treatmentPackageItemSchema,
+  packageEnrollments: packageEnrollmentSchema,
+  packageUtilizations: packageUtilizationSchema,
+  patientAccounts: patientAccountSchema,
+  patientAccountStatusHistories:
+    patientAccountStatusHistorySchema,
+  accountCharges: accountChargeSchema,
+  accountChargeHistories: accountChargeHistorySchema,
+  invoices: invoiceSchema,
+  invoiceLines: invoiceLineSchema,
+  invoiceStatusHistories: invoiceStatusHistorySchema,
+  creditNotes: creditNoteSchema,
+  debitNotes: debitNoteSchema,
+  discounts: discountSchema,
+  discountApprovals: discountApprovalSchema,
+  financialApprovalRequests:
+    financialApprovalRequestSchema,
+  paymentIntents: paymentIntentSchema,
+  payments: paymentSchema,
+  paymentAllocations: paymentAllocationSchema,
+  deposits: depositSchema,
+  refundRequests: refundRequestSchema,
+  refunds: refundSchema,
+  paymentReversals: paymentReversalSchema,
+  financialLedgerAccounts:
+    financialLedgerAccountSchema,
+  financialLedgerTransactions:
+    financialLedgerTransactionSchema,
+  financialLedgerEntries:
+    financialLedgerEntrySchema,
+} as const;
+
 function specFor(
   name: HospitalCollectionName,
 ) {
@@ -710,6 +804,15 @@ export function schemaForCollection(
 
   if (pharmacyDispensing !== undefined) {
     return pharmacyDispensing;
+  }
+
+  const billingFoundation =
+    billingFoundationSchemas[
+      name as keyof typeof billingFoundationSchemas
+    ];
+
+  if (billingFoundation !== undefined) {
+    return billingFoundation;
   }
 
   const critical =

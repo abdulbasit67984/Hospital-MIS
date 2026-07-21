@@ -219,3 +219,12 @@ export * from './models/pharmacy-dispensation.model.js';
 export * from './models/pharmacy-controlled-medicine.model.js';
 export * from './models/pharmacy-label-counselling.model.js';
 export * from './models/pharmacy-return-reversal.model.js';
+
+export * from './models/billing.types.js';
+export * from './models/billing-schema-helpers.js';
+export * from './models/charge-catalog.model.js';
+export * from './models/billing-pricing-package.model.js';
+export * from './models/patient-account-charge.model.js';
+export * from './models/billing-invoice-adjustment.model.js';
+export * from './models/billing-payment.model.js';
+export * from './models/financial-ledger.model.js';

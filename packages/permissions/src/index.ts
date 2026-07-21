@@ -137,16 +137,60 @@ export const permissionKeys = [
   'pharmacy.reports.export',
   'pharmacy.configuration.manage',
 
+  'billing.catalog.read',
+  'billing.catalog.manage',
+  'billing.catalog.view_cost',
+  'billing.pricing.read',
+  'billing.pricing.manage',
+  'billing.packages.read',
+  'billing.packages.manage',
+
   'billing.accounts.read',
+  'billing.accounts.create',
+  'billing.accounts.manage',
+  'billing.accounts.suspend',
+  'billing.accounts.finalize',
+
+  'billing.charges.read',
   'billing.charges.create',
+  'billing.charges.post',
+  'billing.charges.cancel',
+  'billing.charges.reverse',
+  'billing.charges.adjust',
+  'billing.charges.write_off',
+  'billing.charges.transfer',
+  'billing.charges.manual',
+
+  'billing.invoice.read',
   'billing.invoice.create',
   'billing.invoice.finalize',
+  'billing.invoice.cancel',
+  'billing.invoice.correct',
+  'billing.invoice.print',
+
   'billing.discount.request',
   'billing.discount.approve',
+  'billing.price_override.request',
+  'billing.price_override.approve',
+
+  'billing.payment.read',
   'billing.payment.receive',
+  'billing.payment.allocate',
+  'billing.payment.reverse',
+
+  'billing.refund.request',
+  'billing.refund.approve',
   'billing.refund.process',
+
   'billing.credit_note.create',
+  'billing.credit_note.post',
+  'billing.debit_note.create',
+  'billing.debit_note.post',
   'billing.financial_discharge',
+
+  'billing.reports.read',
+  'billing.reports.export',
+  'billing.reports.cost_margin',
 
   'cash_shifts.open',
   'cash_shifts.close',
@@ -297,9 +341,33 @@ function sensitivityFor(
     key ===
       'pharmacy.configuration.manage' ||
     key ===
+      'billing.catalog.view_cost' ||
+    key ===
+      'billing.accounts.finalize' ||
+    key ===
+      'billing.charges.reverse' ||
+    key ===
+      'billing.charges.adjust' ||
+    key ===
+      'billing.charges.write_off' ||
+    key ===
+      'billing.charges.transfer' ||
+    key ===
       'billing.discount.approve' ||
     key ===
+      'billing.price_override.approve' ||
+    key ===
+      'billing.payment.reverse' ||
+    key ===
+      'billing.refund.approve' ||
+    key ===
       'billing.refund.process' ||
+    key ===
+      'billing.credit_note.post' ||
+    key ===
+      'billing.debit_note.post' ||
+    key ===
+      'billing.reports.cost_margin' ||
     key ===
       'assistance.approve' ||
     key ===

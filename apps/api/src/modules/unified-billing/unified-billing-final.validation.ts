@@ -1,0 +1,15 @@
+import { z } from 'zod';
+const oid=z.string().regex(/^[a-f\d]{24}$/i);
+const money=z.string().regex(/^(0|[1-9]\d{0,14})(\.\d{1,2})?$/);
+const qty=z.string().regex(/^(0|[1-9]\d{0,14})(\.\d{1,6})?$/);
+const reason=z.string().trim().min(3).max(1000);
+const version=z.number().int().min(0);
+const idem=z.string().trim().min(16).max(200);
+export const approvalRequestSchema=z.object({action:z.enum(['DISCOUNT','PRICE_OVERRIDE','REVERSAL','CREDIT','WRITE_OFF','REFUND']),entityType:z.string().min(2).max(80),entityId:oid,amount:money.refine(v=>v!=='0'),reasonCode:z.string().min(2).max(50),reason,expectedVersion:version}).strict();
+export const approvalDecisionSchema=z.object({decision:z.enum(['APPROVE','REJECT']),reason,expectedVersion:version}).strict();
+export const reverseChargeSchema=z.object({quantity:qty.nullable(),amount:money.nullable(),reasonCode:z.string().min(2).max(50),reason,approvalId:oid.nullable(),expectedVersion:version,idempotencyKey:idem}).strict().refine(v=>(v.quantity===null)!==(v.amount===null),{message:'Provide exactly one of quantity or amount'});
+export const adjustChargeSchema=z.object({discountAmount:money,taxAmount:money.nullable(),patientResponsibilityAmount:money.nullable(),payerResponsibilityAmount:money.nullable(),reasonCode:z.string().min(2).max(50),reason,approvalId:oid.nullable(),expectedVersion:version,idempotencyKey:idem}).strict();
+export const writeOffSchema=z.object({invoiceId:oid.nullable(),amount:money.refine(v=>v!=='0'),reasonCode:z.string().min(2).max(50),reason,approvalId:oid,expectedVersion:version,idempotencyKey:idem}).strict();
+export const recordPaymentSchema=z.object({accountId:oid,amount:money.refine(v=>v!=='0'),currency:z.literal('PKR'),method:z.enum(['CASH','CARD','BANK_TRANSFER','MOBILE_WALLET','CHEQUE','OTHER']),allocations:z.array(z.object({invoiceId:oid,amount:money.refine(v=>v!=='0')}).strict()).max(500),externalReference:z.string().trim().max(200).nullable(),cashierId:oid.nullable(),shiftId:oid.nullable(),counterId:oid.nullable(),receivedAt:z.string().datetime({offset:true}),idempotencyKey:idem}).strict();
+export const refundSchema=z.object({amount:money.refine(v=>v!=='0'),reasonCode:z.string().min(2).max(50),reason,approvalId:oid.nullable(),idempotencyKey:idem}).strict();
+export const reportQuerySchema=z.object({from:z.string().datetime({offset:true}),to:z.string().datetime({offset:true}),departmentId:oid.optional(),payerOrganizationId:oid.optional(),sourceModule:z.string().max(80).optional(),status:z.string().max(40).optional(),page:z.coerce.number().int().min(1).default(1),pageSize:z.coerce.number().int().min(1).max(500).default(50)}).strict().refine(v=>new Date(v.from)<new Date(v.to),{message:'from must precede to'});

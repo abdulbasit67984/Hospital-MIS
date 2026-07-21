@@ -1,0 +1,3 @@
+import type { Router } from 'express'; import type { AuthenticationService } from '../auth/auth.service.js'; import type { AuthorizationService } from '../authorization/authorization.service.js'; import type { UnifiedBillingFinalController } from './unified-billing-final.controller.js'; import { createUnifiedBillingRouter } from './unified-billing.routes.js';
+export interface UnifiedBillingModule {router:Router;controller:UnifiedBillingFinalController;}
+export function createUnifiedBillingModule(o:{controller:UnifiedBillingFinalController;authenticationService:AuthenticationService;authorizationService:AuthorizationService}):UnifiedBillingModule{return {controller:o.controller,router:createUnifiedBillingRouter(o)};}

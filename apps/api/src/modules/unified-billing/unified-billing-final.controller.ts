@@ -1,0 +1,16 @@
+import type { NextFunction,Request,Response } from 'express'; import type { UnifiedBillingFinancialControlService } from './services/unified-billing-financial-control.service.js'; import type { UnifiedBillingPaymentService } from './services/unified-billing-payment.service.js'; import type { UnifiedBillingReportingRecoveryService } from './services/unified-billing-reporting-recovery.service.js';
+const actor=(r:Request)=>({userId:r.authenticatedUser!.userId,staffId:null,facilityId:String(r.headers['x-facility-id']),permissions:new Set(r.authenticatedUser!.permissions),correlationId:r.correlationId,ipAddress:r.ip,userAgent:r.get('user-agent')??null});
+export class UnifiedBillingFinalController {constructor(private readonly control:UnifiedBillingFinancialControlService,private readonly payments:UnifiedBillingPaymentService,private readonly reports:UnifiedBillingReportingRecoveryService){}
+ private send(res:Response,data:unknown){res.status(200).json({success:true,data});} private fail(next:NextFunction,e:unknown){next(e);}
+ requestApproval=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.control.requestApproval(actor(r),r.body));}catch(e){this.fail(n,e)}};
+ decideApproval=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.control.decideApproval(actor(r),{approvalId:r.params['approvalId']!,...r.body}));}catch(e){this.fail(n,e)}};
+ reverseCharge=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.control.reverseCharge(actor(r),{chargeId:r.params['chargeId']!,...r.body}));}catch(e){this.fail(n,e)}};
+ adjustCharge=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.control.adjustCharge(actor(r),{chargeId:r.params['chargeId']!,...r.body}));}catch(e){this.fail(n,e)}};
+ writeOff=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.control.writeOff(actor(r),{accountId:r.params['accountId']!,...r.body}));}catch(e){this.fail(n,e)}};
+ payment=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.payments.record(actor(r),r.body));}catch(e){this.fail(n,e)}};
+ refund=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.payments.requestRefund(actor(r),{paymentId:r.params['paymentId']!,...r.body}));}catch(e){this.fail(n,e)}};
+ chargeActivity=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.reports.chargeActivity({facilityId:String(r.headers['x-facility-id']),...r.query} as never));}catch(e){this.fail(n,e)}};
+ revenue=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.reports.revenueByCode({facilityId:String(r.headers['x-facility-id']),...r.query} as never));}catch(e){this.fail(n,e)}};
+ aging=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.reports.aging(String(r.headers['x-facility-id'])));}catch(e){this.fail(n,e)}};
+ reconciliation=async(r:Request,res:Response,n:NextFunction)=>{try{this.send(res,await this.reports.reconciliation({facilityId:String(r.headers['x-facility-id']),...r.query} as never));}catch(e){this.fail(n,e)}};
+}
