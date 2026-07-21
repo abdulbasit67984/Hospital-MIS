@@ -56,6 +56,10 @@ import {
 } from './infrastructure/inventory-infrastructure.js';
 
 import {
+  createPharmacyDispensingInfrastructure,
+} from './infrastructure/pharmacy-dispensing-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -116,6 +120,10 @@ import {
 import {
   createInventoryModule,
 } from './modules/inventory/index.js';
+
+import {
+  createPharmacyDispensingModule,
+} from './modules/pharmacy-dispensing/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -426,6 +434,34 @@ const inventoryInfrastructure =
     },
   });
 
+const pharmacyDispensingInfrastructure =
+  createPharmacyDispensingInfrastructure({
+    database,
+
+    inventoryApplication:
+      inventoryInfrastructure.application,
+
+    operationalInfrastructure,
+
+    async publishRealtime(
+      message,
+    ) {
+      socketServer?.emit(
+        message.eventType,
+        {
+          facilityId:
+            message.facilityId,
+
+          pharmacyLocationId:
+            message.pharmacyLocationId,
+
+          payload:
+            message.payload,
+        },
+      );
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -552,6 +588,21 @@ const inventoryModule =
       inventoryInfrastructure.runtime.actorResolver,
   });
 
+const pharmacyDispensingModule =
+  createPharmacyDispensingModule({
+    application:
+      pharmacyDispensingInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+
+    actorResolver:
+      pharmacyDispensingInfrastructure.runtime.actorResolver,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -625,6 +676,11 @@ const app =
       application.use(
         '/api/v1/inventory',
         inventoryModule.router,
+      );
+
+      application.use(
+        '/api/v1/pharmacy-dispensing',
+        pharmacyDispensingModule.router,
       );
     },
   });
@@ -824,9 +880,23 @@ const recoveryLoops = [
 
     logger,
   }),
+
+  startRecoveryLoop({
+    name:
+      'Pharmacy dispensing',
+
+    workerId:
+      `api-pharmacy-dispensing-recovery:${process.pid}`,
+
+    recovery:
+      pharmacyDispensingInfrastructure.recovery,
+
+    logger,
+  }),
 ];
 
 inventoryInfrastructure.backgroundJobs.start();
+pharmacyDispensingInfrastructure.backgroundJobs.start();
 
 void dispatchOutboxBatch();
 
@@ -875,6 +945,9 @@ httpServer.listen(
         inventoryModule:
           'mounted',
 
+        pharmacyDispensingModule:
+          'mounted',
+
         transactionRecovery:
           'enabled',
 
@@ -882,6 +955,9 @@ httpServer.listen(
           'enabled',
 
         inventoryBackgroundJobs:
+          'enabled',
+
+        pharmacyDispensingBackgroundJobs:
           'enabled',
 
         patientSensitiveSnapshotEncryption:
@@ -907,6 +983,9 @@ httpServer.listen(
 
         inventoryDispensingMutation:
           'enabled-through-inventory-ledger',
+
+        pharmacyDispensingFinalization:
+          'enabled-with-idempotency-audit-outbox-and-recovery',
 
         facilityAuthenticationEnforcement:
           'enabled',
@@ -937,6 +1016,7 @@ async function shutdown(
     true;
 
   inventoryInfrastructure.backgroundJobs.stop();
+  pharmacyDispensingInfrastructure.backgroundJobs.stop();
 
   clearInterval(
     outboxInterval,

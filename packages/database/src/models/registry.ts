@@ -275,6 +275,30 @@ import {
 } from './inventory-control.model.js';
 
 import {
+  dispensationItemSchema,
+  dispensationSchema,
+  dispensationStatusHistorySchema,
+  dispensationSubstitutionSchema,
+  pharmacyReviewEventSchema,
+} from './pharmacy-dispensation.model.js';
+
+import {
+  controlledMedicineRegisterEntrySchema,
+} from './pharmacy-controlled-medicine.model.js';
+
+import {
+  dispensingLabelPrintSchema,
+  dispensingLabelSchema,
+  pharmacyCounsellingRecordSchema,
+} from './pharmacy-label-counselling.model.js';
+
+import {
+  dispensationReversalSchema,
+  patientReturnItemSchema,
+  patientReturnSchema,
+} from './pharmacy-return-reversal.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -480,6 +504,27 @@ export const inventoryControlSchemas = {
   reorderRules: reorderRuleSchema,
 } as const;
 
+export const pharmacyDispensingSchemas = {
+  dispensations: dispensationSchema,
+  dispensationItems: dispensationItemSchema,
+  dispensationStatusHistories:
+    dispensationStatusHistorySchema,
+  pharmacyReviewEvents: pharmacyReviewEventSchema,
+  dispensationSubstitutions:
+    dispensationSubstitutionSchema,
+  controlledMedicineRegisterEntries:
+    controlledMedicineRegisterEntrySchema,
+  dispensingLabels: dispensingLabelSchema,
+  dispensingLabelPrints:
+    dispensingLabelPrintSchema,
+  pharmacyCounsellingRecords:
+    pharmacyCounsellingRecordSchema,
+  dispensationReversals:
+    dispensationReversalSchema,
+  patientReturns: patientReturnSchema,
+  patientReturnItems: patientReturnItemSchema,
+} as const;
+
 function specFor(
   name: HospitalCollectionName,
 ) {
@@ -656,6 +701,15 @@ export function schemaForCollection(
 
   if (inventoryControl !== undefined) {
     return inventoryControl;
+  }
+
+  const pharmacyDispensing =
+    pharmacyDispensingSchemas[
+      name as keyof typeof pharmacyDispensingSchemas
+    ];
+
+  if (pharmacyDispensing !== undefined) {
+    return pharmacyDispensing;
   }
 
   const critical =

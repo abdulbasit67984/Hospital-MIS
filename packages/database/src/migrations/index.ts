@@ -109,6 +109,10 @@ import {
   inventoryControlsMonitoring,
 } from './027-inventory-controls-monitoring.js';
 
+import {
+  pharmacyDispensingFoundation,
+} from './028-pharmacy-dispensing-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -137,6 +141,7 @@ export const migrations = [
   inventoryProcurementReceiving,
   inventoryStockLedgerOperations,
   inventoryControlsMonitoring,
+  pharmacyDispensingFoundation,
 ] as const;
 
 export async function runMigrations(
@@ -204,3 +209,4 @@ export * from './024-inventory-foundation.js';
 export * from './025-inventory-procurement-receiving.js';
 export * from './026-inventory-stock-ledger-operations.js';
 export * from './027-inventory-controls-monitoring.js';
+export * from './028-pharmacy-dispensing-foundation.js';

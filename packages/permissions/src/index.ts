@@ -123,10 +123,19 @@ export const permissionKeys = [
   'inventory.adjust',
   'inventory.count',
 
+  'pharmacy.read',
   'pharmacy.queue.read',
+  'pharmacy.verify',
   'pharmacy.dispense',
+  'pharmacy.controlled_dispense',
   'pharmacy.return',
+  'pharmacy.reversal',
+  'pharmacy.price_override',
+  'pharmacy.view_cost',
   'pharmacy.override_fefo',
+  'pharmacy.reports.read',
+  'pharmacy.reports.export',
+  'pharmacy.configuration.manage',
 
   'billing.accounts.read',
   'billing.charges.create',
@@ -278,6 +287,16 @@ function sensitivityFor(
     key ===
       'inventory.view_cost' ||
     key ===
+      'pharmacy.controlled_dispense' ||
+    key ===
+      'pharmacy.reversal' ||
+    key ===
+      'pharmacy.price_override' ||
+    key ===
+      'pharmacy.view_cost' ||
+    key ===
+      'pharmacy.configuration.manage' ||
+    key ===
       'billing.discount.approve' ||
     key ===
       'billing.refund.process' ||
@@ -312,6 +331,7 @@ function sensitivityFor(
     key.startsWith('clinical_notes.') ||
     key.startsWith('encounters.') ||
     key.startsWith('prescriptions.') ||
+    key.startsWith('pharmacy.') ||
     key === 'formulary.manage' ||
     key.startsWith('laboratory.') ||
     key.startsWith('radiology.') ||
