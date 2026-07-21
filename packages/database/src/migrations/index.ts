@@ -117,6 +117,18 @@ import {
   chargeCatalogUnifiedBillingFoundation,
 } from './029-charge-catalog-unified-billing-foundation.js';
 
+import {
+  paymentsCashierShiftsFoundation,
+} from './030-payments-cashier-shifts-foundation.js';
+
+import {
+  paymentCollectionDeposits,
+} from './031-payment-collection-deposits.js';
+
+import {
+  paymentControlsReconciliation,
+} from './032-payment-controls-reconciliation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -147,6 +159,9 @@ export const migrations = [
   inventoryControlsMonitoring,
   pharmacyDispensingFoundation,
   chargeCatalogUnifiedBillingFoundation,
+  paymentsCashierShiftsFoundation,
+  paymentCollectionDeposits,
+  paymentControlsReconciliation,
 ] as const;
 
 export async function runMigrations(
@@ -216,3 +231,6 @@ export * from './026-inventory-stock-ledger-operations.js';
 export * from './027-inventory-controls-monitoring.js';
 export * from './028-pharmacy-dispensing-foundation.js';
 export * from './029-charge-catalog-unified-billing-foundation.js';
+export * from './030-payments-cashier-shifts-foundation.js';
+export * from './031-payment-collection-deposits.js';
+export * from './032-payment-controls-reconciliation.js';

@@ -211,7 +211,6 @@ import {
   wardHandoverSchema,
 } from './inpatient-nursing.model.js';
 
-
 import {
   intakeOutputEntrySchema,
   nursingAssessmentSchema,
@@ -349,6 +348,34 @@ import {
   financialLedgerEntrySchema,
   financialLedgerTransactionSchema,
 } from './financial-ledger.model.js';
+
+import {
+  cashCounterSchema,
+  paymentMethodConfigurationSchema,
+} from './payment-configuration.model.js';
+
+import {
+  cashShiftSchema,
+  shiftReconciliationSchema,
+} from './cashier-shift.model.js';
+
+import {
+  paymentReceiptSchema,
+  receiptReprintSchema,
+} from './payment-receipt.model.js';
+
+import {
+  depositApplicationSchema,
+  depositTransferSchema,
+} from './deposit-operation.model.js';
+
+import {
+  cashMovementSchema,
+} from './cash-movement.model.js';
+
+import {
+  paymentOperationalHistorySchema,
+} from './payment-operational-history.model.js';
 
 import {
   commonFields,
@@ -505,16 +532,18 @@ export const inpatientNursingSchemas = {
     nursingEntryAmendmentSchema,
 } as const;
 
-
 export const nursingMedicationSchemas = {
   nursingAssessments: nursingAssessmentSchema,
-  nursingAssessmentVersions: nursingAssessmentVersionSchema,
+  nursingAssessmentVersions:
+    nursingAssessmentVersionSchema,
   nursingCarePlans: nursingCarePlanSchema,
-  nursingCarePlanVersions: nursingCarePlanVersionSchema,
+  nursingCarePlanVersions:
+    nursingCarePlanVersionSchema,
   nursingTasks: nursingTaskSchema,
   intakeOutputEntries: intakeOutputEntrySchema,
   nursingDevices: nursingDeviceSchema,
-  nursingDeviceObservations: nursingDeviceObservationSchema,
+  nursingDeviceObservations:
+    nursingDeviceObservationSchema,
 } as const;
 
 export const inventoryFoundationSchemas = {
@@ -528,8 +557,10 @@ export const inventoryFoundationSchemas = {
 
 export const inventoryProcurementSchemas = {
   purchaseRequisitions: purchaseRequisitionSchema,
-  purchaseRequisitionItems: purchaseRequisitionItemSchema,
-  procurementApprovalHistories: procurementApprovalHistorySchema,
+  purchaseRequisitionItems:
+    purchaseRequisitionItemSchema,
+  procurementApprovalHistories:
+    procurementApprovalHistorySchema,
   purchaseOrders: purchaseOrderSchema,
   purchaseOrderItems: purchaseOrderItemSchema,
   goodsReceipts: goodsReceiptSchema,
@@ -550,7 +581,8 @@ export const inventoryOperationalSchemas = {
 export const inventoryControlSchemas = {
   stockAdjustments: stockAdjustmentSchema,
   physicalStockCounts: physicalStockCountSchema,
-  physicalStockCountItems: physicalStockCountItemSchema,
+  physicalStockCountItems:
+    physicalStockCountItemSchema,
   productRecalls: productRecallSchema,
   productRecallItems: productRecallItemSchema,
   reorderRules: reorderRuleSchema,
@@ -581,36 +613,53 @@ export const billingFoundationSchemas = {
   chargeCategories: chargeCategorySchema,
   taxCategories: taxCategorySchema,
   chargeCatalog: chargeCatalogSchema,
-  chargeCatalogVersions: chargeCatalogVersionSchema,
+  chargeCatalogVersions:
+    chargeCatalogVersionSchema,
   chargeRules: chargeRuleSchema,
   priceLists: priceListSchema,
   priceListVersions: priceListVersionSchema,
   serviceRates: serviceRateSchema,
   treatmentPackages: treatmentPackageSchema,
-  treatmentPackageItems: treatmentPackageItemSchema,
+  treatmentPackageItems:
+    treatmentPackageItemSchema,
   packageEnrollments: packageEnrollmentSchema,
   packageUtilizations: packageUtilizationSchema,
   patientAccounts: patientAccountSchema,
   patientAccountStatusHistories:
     patientAccountStatusHistorySchema,
   accountCharges: accountChargeSchema,
-  accountChargeHistories: accountChargeHistorySchema,
+  accountChargeHistories:
+    accountChargeHistorySchema,
   invoices: invoiceSchema,
   invoiceLines: invoiceLineSchema,
-  invoiceStatusHistories: invoiceStatusHistorySchema,
+  invoiceStatusHistories:
+    invoiceStatusHistorySchema,
   creditNotes: creditNoteSchema,
   debitNotes: debitNoteSchema,
   discounts: discountSchema,
   discountApprovals: discountApprovalSchema,
   financialApprovalRequests:
     financialApprovalRequestSchema,
+  paymentMethodConfigurations:
+    paymentMethodConfigurationSchema,
   paymentIntents: paymentIntentSchema,
   payments: paymentSchema,
+  paymentReceipts: paymentReceiptSchema,
+  receiptReprints: receiptReprintSchema,
   paymentAllocations: paymentAllocationSchema,
   deposits: depositSchema,
+  depositApplications: depositApplicationSchema,
+  depositTransfers: depositTransferSchema,
   refundRequests: refundRequestSchema,
   refunds: refundSchema,
   paymentReversals: paymentReversalSchema,
+  cashCounters: cashCounterSchema,
+  cashShifts: cashShiftSchema,
+  shiftReconciliations:
+    shiftReconciliationSchema,
+  cashMovements: cashMovementSchema,
+  paymentOperationalHistories:
+    paymentOperationalHistorySchema,
   financialLedgerAccounts:
     financialLedgerAccountSchema,
   financialLedgerTransactions:
@@ -750,7 +799,6 @@ export function schemaForCollection(
   if (inpatientNursing !== undefined) {
     return inpatientNursing;
   }
-
 
   const nursingMedication =
     nursingMedicationSchemas[

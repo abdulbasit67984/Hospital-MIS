@@ -168,6 +168,8 @@ export const chargeHistoryActionValues = [
 export const invoiceStatusValues = [
   'DRAFT',
   'FINALIZED',
+  'PARTIALLY_PAID',
+  'PAID',
   'CANCELLED',
   'CORRECTED',
 ] as const;
@@ -215,33 +217,61 @@ export const approvalTypeValues = [
   'DISCOUNT',
   'PRICE_OVERRIDE',
   'REVERSAL',
+  'PAYMENT_REVERSAL',
   'CREDIT',
   'WRITE_OFF',
   'REFUND',
+  'REFUND_REVERSAL',
+  'DEPOSIT_TRANSFER',
+  'DEPOSIT_RELEASE',
+  'CASH_SHIFT_REOPEN',
+  'CASH_SHIFT_CLOSE',
+  'SHIFT_VARIANCE',
+  'CASH_MOVEMENT',
   'ACCOUNT_FINALIZATION',
 ] as const;
 
 export const paymentMethodValues = [
   'CASH',
   'CARD',
+  'CREDIT_CARD',
+  'DEBIT_CARD',
   'BANK_TRANSFER',
+  'BANK_DEPOSIT',
   'MOBILE_WALLET',
+  'ONLINE_PAYMENT',
   'CHEQUE',
+  'CORPORATE_SETTLEMENT',
+  'PANEL_SETTLEMENT',
   'OTHER',
+  'SPLIT_TENDER',
+] as const;
+
+export const paymentIntentPurposeValues = [
+  'ACCOUNT_PAYMENT',
+  'INVOICE_PAYMENT',
+  'PATIENT_DEPOSIT',
+  'ADMISSION_DEPOSIT',
+  'PROCEDURE_DEPOSIT',
+  'GENERAL_ADVANCE',
+  'REFUND',
 ] as const;
 
 export const paymentIntentStatusValues = [
   'PENDING',
   'AUTHORIZED',
+  'CAPTURED',
   'FAILED',
   'CANCELLED',
   'EXPIRED',
   'COMPLETED',
+  'REVERSED',
 ] as const;
 
 export const paymentStatusValues = [
   'PENDING',
   'POSTED',
+  'COMPLETED',
   'FAILED',
   'CANCELLED',
   'PARTIALLY_REFUNDED',
@@ -254,11 +284,22 @@ export const allocationStatusValues = [
   'REVERSED',
 ] as const;
 
+export const depositTypeValues = [
+  'PATIENT',
+  'ADMISSION',
+  'PROCEDURE',
+  'GENERAL_ADVANCE',
+] as const;
+
 export const depositStatusValues = [
   'AVAILABLE',
   'PARTIALLY_APPLIED',
   'APPLIED',
+  'PARTIALLY_TRANSFERRED',
+  'TRANSFERRED',
+  'PARTIALLY_REFUNDED',
   'REFUNDED',
+  'FORFEITED',
   'REVERSED',
 ] as const;
 

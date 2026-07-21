@@ -60,6 +60,10 @@ import {
 } from './infrastructure/pharmacy-dispensing-infrastructure.js';
 
 import {
+  createPaymentsCashierShiftsInfrastructure,
+} from './infrastructure/payments-cashier-shifts-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -124,6 +128,10 @@ import {
 import {
   createPharmacyDispensingModule,
 } from './modules/pharmacy-dispensing/index.js';
+
+import {
+  createPaymentsCashierShiftsModule,
+} from './modules/payments-cashier-shifts/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -462,6 +470,43 @@ const pharmacyDispensingInfrastructure =
     },
   });
 
+const paymentsCashierShiftsInfrastructure =
+  createPaymentsCashierShiftsInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    async publishRealtime(
+      message,
+    ) {
+      socketServer?.emit(
+        message.eventType,
+        {
+          facilityId:
+            message.facilityId,
+
+          entityId:
+            message.entityId,
+
+          counterId:
+            message.counterId,
+
+          shiftId:
+            message.shiftId,
+
+          status:
+            message.status,
+
+          occurredAt:
+            message.occurredAt,
+        },
+      );
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -603,6 +648,21 @@ const pharmacyDispensingModule =
       pharmacyDispensingInfrastructure.runtime.actorResolver,
   });
 
+const paymentsCashierShiftsModule =
+  createPaymentsCashierShiftsModule({
+    application:
+      paymentsCashierShiftsInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+
+    actorResolver:
+      paymentsCashierShiftsInfrastructure.actorResolver,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -681,6 +741,12 @@ const app =
       application.use(
         '/api/v1/pharmacy-dispensing',
         pharmacyDispensingModule.router,
+      );
+
+
+      application.use(
+        '/api/v1/payments-cashier-shifts',
+        paymentsCashierShiftsModule.router,
       );
     },
   });
@@ -893,10 +959,24 @@ const recoveryLoops = [
 
     logger,
   }),
+
+  startRecoveryLoop({
+    name:
+      'Payments and cashier shifts',
+
+    workerId:
+      `api-payments-cashier-recovery:${process.pid}`,
+
+    recovery:
+      paymentsCashierShiftsInfrastructure.recovery,
+
+    logger,
+  }),
 ];
 
 inventoryInfrastructure.backgroundJobs.start();
 pharmacyDispensingInfrastructure.backgroundJobs.start();
+paymentsCashierShiftsInfrastructure.backgroundJobs.start();
 
 void dispatchOutboxBatch();
 
@@ -948,6 +1028,9 @@ httpServer.listen(
         pharmacyDispensingModule:
           'mounted',
 
+        paymentsCashierShiftsModule:
+          'mounted',
+
         transactionRecovery:
           'enabled',
 
@@ -959,6 +1042,12 @@ httpServer.listen(
 
         pharmacyDispensingBackgroundJobs:
           'enabled',
+
+        paymentsCashierShiftsBackgroundJobs:
+          'enabled',
+
+        paymentFinancialControls:
+          'enabled-with-maker-checker-idempotency-ledger-audit-outbox-and-recovery',
 
         patientSensitiveSnapshotEncryption:
           'enabled',
@@ -1017,6 +1106,7 @@ async function shutdown(
 
   inventoryInfrastructure.backgroundJobs.stop();
   pharmacyDispensingInfrastructure.backgroundJobs.stop();
+  paymentsCashierShiftsInfrastructure.backgroundJobs.stop();
 
   clearInterval(
     outboxInterval,

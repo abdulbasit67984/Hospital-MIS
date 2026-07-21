@@ -192,9 +192,56 @@ export const permissionKeys = [
   'billing.reports.export',
   'billing.reports.cost_margin',
 
+  'payments.methods.read',
+  'payments.methods.manage',
+  'payments.counters.read',
+  'payments.counters.manage',
+  'payments.counters.assign',
+  'payments.intents.create',
+  'payments.intents.cancel',
+  'payments.intents.recover',
+  'payments.read',
+  'payments.collect',
+  'payments.collect_manual',
+  'payments.collect_cash',
+  'payments.collect_non_cash',
+  'payments.collect_split_tender',
+  'payments.allocate',
+  'payments.reallocate',
+  'payments.deposits.read',
+  'payments.deposits.collect',
+  'payments.deposits.apply',
+  'payments.deposits.transfer',
+  'payments.deposits.forfeit',
+  'payments.receipts.read',
+  'payments.receipts.print',
+  'payments.receipts.reprint',
+  'payments.refunds.request',
+  'payments.refunds.approve',
+  'payments.refunds.process',
+  'payments.refunds.reverse',
+  'payments.reversals.request',
+  'payments.reversals.approve',
+  'payments.reversals.process',
+  'payments.cash_movements.read',
+  'payments.cash_movements.create',
+  'payments.cash_movements.approve',
+  'payments.cash_movements.post',
+  'payments.reconciliation.read',
+  'payments.reconciliation.override',
+  'payments.reports.read',
+  'payments.reports.export',
+  'payments.recovery.manage',
+
+  'cash_shifts.read',
   'cash_shifts.open',
-  'cash_shifts.close',
+  'cash_shifts.suspend',
+  'cash_shifts.resume',
+  'cash_shifts.handover',
   'cash_shifts.reconcile',
+  'cash_shifts.close',
+  'cash_shifts.reopen',
+  'cash_shifts.approve_variance',
 
   'panels.read',
   'panels.manage',
@@ -295,12 +342,14 @@ export type PermissionSensitivity =
   | 'SENSITIVE'
   | 'HIGHLY_SENSITIVE';
 
-export type PermissionDefinition = Readonly<{
-  key: PermissionKey;
-  module: string;
-  description: string;
-  sensitivity: PermissionSensitivity;
-}>;
+export type PermissionDefinition =
+  Readonly<{
+    key: PermissionKey;
+    module: string;
+    description: string;
+    sensitivity:
+      PermissionSensitivity;
+  }>;
 
 const permissionKeySet =
   new Set<string>(
@@ -311,8 +360,14 @@ function humanizePermission(
   key: PermissionKey,
 ): string {
   return key
-    .replaceAll('.', ' ')
-    .replaceAll('_', ' ')
+    .replaceAll(
+      '.',
+      ' ',
+    )
+    .replaceAll(
+      '_',
+      ' ',
+    )
     .replace(
       /\b\w/g,
       (letter) =>
@@ -324,8 +379,12 @@ function sensitivityFor(
   key: PermissionKey,
 ): PermissionSensitivity {
   if (
-    key.startsWith('audit.') ||
-    key.startsWith('security.') ||
+    key.startsWith(
+      'audit.',
+    ) ||
+    key.startsWith(
+      'security.',
+    ) ||
     key ===
       'patients.read_sensitive' ||
     key ===
@@ -369,6 +428,46 @@ function sensitivityFor(
     key ===
       'billing.reports.cost_margin' ||
     key ===
+      'payments.methods.manage' ||
+    key ===
+      'payments.counters.manage' ||
+    key ===
+      'payments.counters.assign' ||
+    key ===
+      'payments.intents.recover' ||
+    key ===
+      'payments.collect_manual' ||
+    key ===
+      'payments.reallocate' ||
+    key ===
+      'payments.deposits.transfer' ||
+    key ===
+      'payments.deposits.forfeit' ||
+    key ===
+      'payments.receipts.reprint' ||
+    key ===
+      'payments.refunds.approve' ||
+    key ===
+      'payments.refunds.process' ||
+    key ===
+      'payments.refunds.reverse' ||
+    key ===
+      'payments.reversals.approve' ||
+    key ===
+      'payments.reversals.process' ||
+    key ===
+      'payments.cash_movements.approve' ||
+    key ===
+      'payments.cash_movements.post' ||
+    key ===
+      'payments.reconciliation.override' ||
+    key ===
+      'payments.recovery.manage' ||
+    key ===
+      'cash_shifts.reopen' ||
+    key ===
+      'cash_shifts.approve_variance' ||
+    key ===
       'assistance.approve' ||
     key ===
       'identity.roles.assign_permissions' ||
@@ -393,19 +492,50 @@ function sensitivityFor(
   }
 
   if (
-    key.startsWith('billing.') ||
-    key.startsWith('claims.') ||
-    key.startsWith('assistance.') ||
-    key.startsWith('clinical_notes.') ||
-    key.startsWith('encounters.') ||
-    key.startsWith('prescriptions.') ||
-    key.startsWith('pharmacy.') ||
-    key === 'formulary.manage' ||
-    key.startsWith('laboratory.') ||
-    key.startsWith('radiology.') ||
-    key.startsWith('identity.') ||
-    key.startsWith('facilities.') ||
-    key.startsWith('departments.') ||
+    key.startsWith(
+      'billing.',
+    ) ||
+    key.startsWith(
+      'payments.',
+    ) ||
+    key.startsWith(
+      'cash_shifts.',
+    ) ||
+    key.startsWith(
+      'claims.',
+    ) ||
+    key.startsWith(
+      'assistance.',
+    ) ||
+    key.startsWith(
+      'clinical_notes.',
+    ) ||
+    key.startsWith(
+      'encounters.',
+    ) ||
+    key.startsWith(
+      'prescriptions.',
+    ) ||
+    key.startsWith(
+      'pharmacy.',
+    ) ||
+    key ===
+      'formulary.manage' ||
+    key.startsWith(
+      'laboratory.',
+    ) ||
+    key.startsWith(
+      'radiology.',
+    ) ||
+    key.startsWith(
+      'identity.',
+    ) ||
+    key.startsWith(
+      'facilities.',
+    ) ||
+    key.startsWith(
+      'departments.',
+    ) ||
     key ===
       'configuration.manage' ||
     key ===
@@ -424,12 +554,30 @@ export const permissionDefinitions:
       key,
 
       module:
-        key.startsWith('identity.')
+        key.startsWith(
+          'identity.',
+        )
           ? 'identity'
-          : key.startsWith('facilities.') ||
-              key.startsWith('departments.')
-            ? 'facility'
-            : (key.split('.')[0] ?? 'unknown'),
+          : key.startsWith(
+                'payments.',
+              ) ||
+              key.startsWith(
+                'cash_shifts.',
+              )
+            ? 'payments'
+            : key.startsWith(
+                  'facilities.',
+                ) ||
+                key.startsWith(
+                  'departments.',
+                )
+              ? 'facility'
+              : (
+                  key.split(
+                    '.',
+                  )[0] ??
+                  'unknown'
+                ),
 
       description:
         humanizePermission(

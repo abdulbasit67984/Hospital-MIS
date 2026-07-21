@@ -211,7 +211,7 @@ invoiceSchema.pre('validate', function () {
     );
   }
 
-  if (this.status === 'FINALIZED') {
+  if (['FINALIZED', 'PARTIALLY_PAID', 'PAID'].includes(this.status)) {
     if (
       this.issuedAt == null ||
       this.finalizedAt == null ||
@@ -223,6 +223,25 @@ invoiceSchema.pre('validate', function () {
         'Finalized invoices require issue, finalization, and account-lock attribution',
       );
     }
+  }
+  if (
+    this.status === 'PAID' &&
+    this.outstandingAmount.toString() !== '0'
+  ) {
+    this.invalidate(
+      'outstandingAmount',
+      'Paid invoices must have a zero outstanding amount',
+    );
+  }
+  if (
+    this.status === 'PARTIALLY_PAID' &&
+    (this.paymentsAppliedAmount.toString() === '0' ||
+      this.outstandingAmount.toString() === '0')
+  ) {
+    this.invalidate(
+      'status',
+      'Partially paid invoices require applied payments and an outstanding balance',
+    );
   }
   if (
     this.status === 'CANCELLED' &&
