@@ -432,6 +432,34 @@ import {
   claimRemittanceSchema,
 } from './claims-remittance.model.js';
 
+import {
+  fundAllocationReversalSchema,
+  fundReturnSchema,
+  invoiceFundAllocationSchema,
+} from './assistance-allocation.model.js';
+
+import {
+  assistanceApplicationHistorySchema,
+  assistanceApplicationSchema,
+  assistanceReviewSchema,
+  eligibilityEvaluationSnapshotSchema,
+} from './assistance-application.model.js';
+
+import {
+  assistanceApprovalHistorySchema,
+  assistanceApprovalSchema,
+  assistanceReservationSchema,
+} from './assistance-approval.model.js';
+
+import {
+  assistanceFundSchema,
+  fundTransactionSchema,
+  fundTransferSchema,
+} from './assistance-fund.model.js';
+
+import {
+  assistanceWorkItemSchema,
+} from './assistance-work-item.model.js';
 
 import {
   commonFields,
@@ -704,6 +732,26 @@ export const claimsSchemas = {
   claimWorkItems: claimWorkItemSchema,
 } as const;
 
+export const welfareZakatSchemas = {
+  assistanceFunds: assistanceFundSchema,
+  fundTransactions: fundTransactionSchema,
+  fundTransfers: fundTransferSchema,
+  assistanceApplications: assistanceApplicationSchema,
+  assistanceApplicationHistories:
+    assistanceApplicationHistorySchema,
+  assistanceReviews: assistanceReviewSchema,
+  eligibilityEvaluationSnapshots:
+    eligibilityEvaluationSnapshotSchema,
+  assistanceApprovals: assistanceApprovalSchema,
+  assistanceApprovalHistories:
+    assistanceApprovalHistorySchema,
+  assistanceReservations: assistanceReservationSchema,
+  invoiceFundAllocations: invoiceFundAllocationSchema,
+  fundAllocationReversals: fundAllocationReversalSchema,
+  fundReturns: fundReturnSchema,
+  assistanceWorkItems: assistanceWorkItemSchema,
+} as const;
+
 export const billingFoundationSchemas = {
   chargeCategories: chargeCategorySchema,
   taxCategories: taxCategorySchema,
@@ -974,6 +1022,15 @@ export function schemaForCollection(
 
   if (claims !== undefined) {
     return claims;
+  }
+
+  const welfareZakat =
+    welfareZakatSchemas[
+      name as keyof typeof welfareZakatSchemas
+    ];
+
+  if (welfareZakat !== undefined) {
+    return welfareZakat;
   }
 
   const critical =

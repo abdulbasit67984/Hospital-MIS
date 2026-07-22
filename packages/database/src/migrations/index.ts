@@ -137,6 +137,10 @@ import {
   claimsFoundation,
 } from './034-claims-foundation.js';
 
+import {
+  welfareZakatFoundation,
+} from './035-welfare-zakat-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -172,6 +176,7 @@ export const migrations = [
   paymentControlsReconciliation,
   panelsPackagesCoverageFoundation,
   claimsFoundation,
+  welfareZakatFoundation,
 ] as const;
 
 export async function runMigrations(
@@ -197,7 +202,7 @@ export async function runMigrations(
           id: 1,
         })
         .toArray()
-    ).map((record) =>
+    ).map((record: Record<string, unknown>) =>
       String(record['id']),
     ),
   );
@@ -246,3 +251,4 @@ export * from './031-payment-collection-deposits.js';
 export * from './032-payment-controls-reconciliation.js';
 export * from './033-panels-packages-coverage-foundation.js';
 export * from './034-claims-foundation.js';
+export * from './035-welfare-zakat-foundation.js';

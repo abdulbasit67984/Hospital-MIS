@@ -72,6 +72,10 @@ import {
 } from './infrastructure/claims-infrastructure.js';
 
 import {
+  createWelfareZakatInfrastructure,
+} from './infrastructure/welfare-zakat-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -148,6 +152,10 @@ import {
 import {
   createClaimsModule,
 } from './modules/claims/index.js';
+
+import {
+  createWelfareZakatModule,
+} from './modules/welfare-zakat/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -550,6 +558,20 @@ const claimsInfrastructure =
       facilityInfrastructure.crypto,
   });
 
+
+const welfareZakatInfrastructure =
+  createWelfareZakatInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -731,6 +753,19 @@ const claimsModule =
       authorizationModule.service,
   });
 
+
+const welfareZakatModule =
+  createWelfareZakatModule({
+    application:
+      welfareZakatInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -826,6 +861,12 @@ const app =
       application.use(
         '/api/v1/claims',
         claimsModule.router,
+      );
+
+
+      application.use(
+        '/api/v1/welfare-zakat',
+        welfareZakatModule.router,
       );
     },
   });
@@ -1077,6 +1118,19 @@ const recoveryLoops = [
 
     logger,
   }),
+
+  startRecoveryLoop({
+    name:
+      'Welfare and Zakat',
+
+    workerId:
+      `api-welfare-zakat-recovery:${process.pid}`,
+
+    recovery:
+      welfareZakatInfrastructure.recovery,
+
+    logger,
+  }),
 ];
 
 inventoryInfrastructure.backgroundJobs.start();
@@ -1084,6 +1138,7 @@ pharmacyDispensingInfrastructure.backgroundJobs.start();
 paymentsCashierShiftsInfrastructure.backgroundJobs.start();
 panelsPackagesCoverageInfrastructure.backgroundJobs.start();
 claimsInfrastructure.backgroundJobs.start();
+welfareZakatInfrastructure.backgroundJobs.start();
 
 void dispatchOutboxBatch();
 
@@ -1206,6 +1261,15 @@ httpServer.listen(
 
         configurationCacheCoherence:
           'mongo-epoch-and-outbox',
+
+        welfareZakatModule:
+          'mounted-with-funds-applications-approvals-allocations-transfers-reports-and-recovery',
+
+        welfareZakatBackgroundJobs:
+          'enabled-with-expiry-reconciliation-and-report-exports',
+
+        welfareZakatRecovery:
+          'enabled-with-evidence-based-transaction-recovery',
       },
 
       'Hospital MIS API started',
@@ -1234,6 +1298,7 @@ async function shutdown(
   paymentsCashierShiftsInfrastructure.backgroundJobs.stop();
   panelsPackagesCoverageInfrastructure.backgroundJobs.stop();
   claimsInfrastructure.backgroundJobs.stop();
+  welfareZakatInfrastructure.backgroundJobs.stop();
 
   clearInterval(
     outboxInterval,

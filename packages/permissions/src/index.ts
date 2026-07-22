@@ -311,6 +311,47 @@ export const permissionKeys = [
   'assistance.allocate',
   'assistance.reverse',
 
+  'welfare_zakat.read',
+  'welfare_zakat.read_sensitive',
+  'welfare_zakat.funds.read',
+  'welfare_zakat.funds.create',
+  'welfare_zakat.funds.approve',
+  'welfare_zakat.funds.status_manage',
+  'welfare_zakat.fund_transactions.record',
+  'welfare_zakat.fund_transactions.approve',
+  'welfare_zakat.transfers.request',
+  'welfare_zakat.transfers.approve',
+  'welfare_zakat.donations.record',
+  'welfare_zakat.donations.approve',
+  'welfare_zakat.applications.create',
+  'welfare_zakat.applications.update',
+  'welfare_zakat.applications.submit',
+  'welfare_zakat.applications.review',
+  'welfare_zakat.applications.reopen',
+  'welfare_zakat.applications.cancel',
+  'welfare_zakat.assign',
+  'welfare_zakat.escalate',
+  'welfare_zakat.eligibility.evaluate',
+  'welfare_zakat.approvals.request',
+  'welfare_zakat.approvals.decide',
+  'welfare_zakat.approvals.cancel',
+  'welfare_zakat.approvals.reverse',
+  'welfare_zakat.reservations.create',
+  'welfare_zakat.reservations.release',
+  'welfare_zakat.allocations.create',
+  'welfare_zakat.allocations.approve',
+  'welfare_zakat.allocations.confirm',
+  'welfare_zakat.allocations.reverse.request',
+  'welfare_zakat.allocations.reverse.approve',
+  'welfare_zakat.refunds.request',
+  'welfare_zakat.refunds.approve',
+  'welfare_zakat.repayments.request',
+  'welfare_zakat.repayments.approve',
+  'welfare_zakat.recovery.manage',
+  'welfare_zakat.reconcile',
+  'welfare_zakat.reports.read',
+  'welfare_zakat.reports.export',
+
   'consultants.read',
   'consultants.agreements.manage',
   'consultants.settlements.manage',
@@ -556,6 +597,36 @@ function sensitivityFor(
     key ===
       'assistance.approve' ||
     key ===
+      'welfare_zakat.read_sensitive' ||
+    key ===
+      'welfare_zakat.funds.approve' ||
+    key ===
+      'welfare_zakat.funds.status_manage' ||
+    key ===
+      'welfare_zakat.fund_transactions.approve' ||
+    key ===
+      'welfare_zakat.transfers.approve' ||
+    key ===
+      'welfare_zakat.donations.approve' ||
+    key ===
+      'welfare_zakat.approvals.decide' ||
+    key ===
+      'welfare_zakat.approvals.cancel' ||
+    key ===
+      'welfare_zakat.approvals.reverse' ||
+    key ===
+      'welfare_zakat.allocations.approve' ||
+    key ===
+      'welfare_zakat.allocations.reverse.approve' ||
+    key ===
+      'welfare_zakat.refunds.approve' ||
+    key ===
+      'welfare_zakat.repayments.approve' ||
+    key ===
+      'welfare_zakat.recovery.manage' ||
+    key ===
+      'welfare_zakat.reconcile' ||
+    key ===
       'identity.roles.assign_permissions' ||
     key ===
       'identity.users.assign_roles' ||
@@ -601,6 +672,9 @@ function sensitivityFor(
     ) ||
     key.startsWith(
       'assistance.',
+    ) ||
+    key.startsWith(
+      'welfare_zakat.',
     ) ||
     key.startsWith(
       'clinical_notes.',

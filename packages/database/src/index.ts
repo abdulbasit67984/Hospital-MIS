@@ -247,3 +247,11 @@ export * from './models/claims-core.model.js';
 export * from './models/claims-workflow.model.js';
 export * from './models/claims-adjudication.model.js';
 export * from './models/claims-remittance.model.js';
+
+export * from './models/welfare-zakat.types.js';
+export * from './models/welfare-zakat-schema-helpers.js';
+export * from './models/assistance-fund.model.js';
+export * from './models/assistance-application.model.js';
+export * from './models/assistance-approval.model.js';
+export * from './models/assistance-allocation.model.js';
+export * from './models/assistance-work-item.model.js';
