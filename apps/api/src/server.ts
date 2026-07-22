@@ -64,6 +64,10 @@ import {
 } from './infrastructure/payments-cashier-shifts-infrastructure.js';
 
 import {
+  createPanelsPackagesCoverageInfrastructure,
+} from './infrastructure/panels-packages-coverage-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -132,6 +136,10 @@ import {
 import {
   createPaymentsCashierShiftsModule,
 } from './modules/payments-cashier-shifts/index.js';
+
+import {
+  createPanelsPackagesCoverageModule,
+} from './modules/panels-packages-coverage/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -507,6 +515,19 @@ const paymentsCashierShiftsInfrastructure =
     },
   });
 
+const panelsPackagesCoverageInfrastructure =
+  createPanelsPackagesCoverageInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -663,6 +684,18 @@ const paymentsCashierShiftsModule =
       paymentsCashierShiftsInfrastructure.actorResolver,
   });
 
+const panelsPackagesCoverageModule =
+  createPanelsPackagesCoverageModule({
+    application:
+      panelsPackagesCoverageInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -747,6 +780,11 @@ const app =
       application.use(
         '/api/v1/payments-cashier-shifts',
         paymentsCashierShiftsModule.router,
+      );
+
+      application.use(
+        '/api/v1/panels-packages-coverage',
+        panelsPackagesCoverageModule.router,
       );
     },
   });
@@ -972,11 +1010,25 @@ const recoveryLoops = [
 
     logger,
   }),
+
+  startRecoveryLoop({
+    name:
+      'Panels, packages, and coverage',
+
+    workerId:
+      `api-ppc-recovery:${process.pid}`,
+
+    recovery:
+      panelsPackagesCoverageInfrastructure.recovery,
+
+    logger,
+  }),
 ];
 
 inventoryInfrastructure.backgroundJobs.start();
 pharmacyDispensingInfrastructure.backgroundJobs.start();
 paymentsCashierShiftsInfrastructure.backgroundJobs.start();
+panelsPackagesCoverageInfrastructure.backgroundJobs.start();
 
 void dispatchOutboxBatch();
 
@@ -1031,6 +1083,9 @@ httpServer.listen(
         paymentsCashierShiftsModule:
           'mounted',
 
+        panelsPackagesCoverageModule:
+          'mounted',
+
         transactionRecovery:
           'enabled',
 
@@ -1045,6 +1100,12 @@ httpServer.listen(
 
         paymentsCashierShiftsBackgroundJobs:
           'enabled',
+
+        panelsPackagesCoverageBackgroundJobs:
+          'enabled',
+
+        panelsPackagesCoverageFinancialControls:
+          'enabled-with-maker-checker-billing-refund-audit-outbox-reporting-and-recovery',
 
         paymentFinancialControls:
           'enabled-with-maker-checker-idempotency-ledger-audit-outbox-and-recovery',
@@ -1107,6 +1168,7 @@ async function shutdown(
   inventoryInfrastructure.backgroundJobs.stop();
   pharmacyDispensingInfrastructure.backgroundJobs.stop();
   paymentsCashierShiftsInfrastructure.backgroundJobs.stop();
+  panelsPackagesCoverageInfrastructure.backgroundJobs.stop();
 
   clearInterval(
     outboxInterval,

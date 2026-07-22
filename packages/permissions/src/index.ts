@@ -245,9 +245,29 @@ export const permissionKeys = [
 
   'panels.read',
   'panels.manage',
-  'coverage.evaluate',
-  'preauthorizations.manage',
+  'panels.activate',
+
+  'packages.read',
   'packages.manage',
+  'packages.activate',
+  'packages.enroll',
+  'packages.suspend',
+  'packages.cancel',
+  'packages.reverse',
+
+  'coverage.read',
+  'coverage.manage',
+  'coverage.activate',
+  'coverage.enroll',
+  'coverage.verify',
+  'coverage.estimate',
+  'coverage.determine',
+  'coverage.override',
+  'coverage.utilization.read',
+  'coverage.reports.read',
+  'coverage.reports.export',
+
+  'preauthorizations.manage',
 
   'claims.read',
   'claims.prepare',
@@ -468,6 +488,18 @@ function sensitivityFor(
     key ===
       'cash_shifts.approve_variance' ||
     key ===
+      'panels.activate' ||
+    key ===
+      'packages.activate' ||
+    key ===
+      'packages.cancel' ||
+    key ===
+      'packages.reverse' ||
+    key ===
+      'coverage.activate' ||
+    key ===
+      'coverage.override' ||
+    key ===
       'assistance.approve' ||
     key ===
       'identity.roles.assign_permissions' ||
@@ -500,6 +532,15 @@ function sensitivityFor(
     ) ||
     key.startsWith(
       'cash_shifts.',
+    ) ||
+    key.startsWith(
+      'panels.',
+    ) ||
+    key.startsWith(
+      'packages.',
+    ) ||
+    key.startsWith(
+      'coverage.',
     ) ||
     key.startsWith(
       'claims.',

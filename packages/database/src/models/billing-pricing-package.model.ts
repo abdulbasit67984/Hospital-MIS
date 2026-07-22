@@ -546,10 +546,66 @@ export const treatmentPackageSchema = new Schema(
         'PROCEDURE',
         'SURGERY',
         'MATERNITY',
+        'DIAGNOSTIC',
+        'WELLNESS',
         'GENERAL',
+        'CUSTOM',
       ],
     },
+    pricingMode: {
+      type: String,
+      required: true,
+      enum: ['FIXED_PRICE', 'DISCOUNTED'],
+      default: 'FIXED_PRICE',
+    },
     fixedPrice: billingNonNegativeDecimal,
+    discountPercentage: billingNullableDecimal,
+    usageLimit: billingNullableDecimal,
+    eligibility: {
+      patientCategoryCodes: {
+        type: [String],
+        required: true,
+        default: [],
+      },
+      minimumAgeYears: {
+        type: Number,
+        default: null,
+        min: 0,
+        max: 150,
+      },
+      maximumAgeYears: {
+        type: Number,
+        default: null,
+        min: 0,
+        max: 150,
+      },
+      genderCodes: {
+        type: [String],
+        required: true,
+        default: [],
+      },
+      admissionRequired: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      departmentIds: {
+        type: [Schema.Types.ObjectId],
+        required: true,
+        default: [],
+      },
+      payerOrganizationIds: {
+        type: [Schema.Types.ObjectId],
+        required: true,
+        default: [],
+      },
+    },
+    currentVersion: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 1,
+    },
     currency: {
       type: String,
       required: true,
@@ -604,6 +660,45 @@ treatmentPackageSchema.pre('validate', function () {
     'fixedPrice',
     this.fixedPrice,
   );
+
+  if (this.discountPercentage != null) {
+    validatePercentage(
+      this,
+      'discountPercentage',
+      this.discountPercentage,
+    );
+  }
+
+  if (this.usageLimit != null) {
+    validatePositiveInventoryDecimal(
+      this,
+      'usageLimit',
+      this.usageLimit,
+    );
+  }
+
+  if (
+    this.pricingMode === 'DISCOUNTED' &&
+    this.discountPercentage == null
+  ) {
+    this.invalidate(
+      'discountPercentage',
+      'Discounted packages require a discount percentage',
+    );
+  }
+
+  if (
+    this.eligibility.minimumAgeYears != null &&
+    this.eligibility.maximumAgeYears != null &&
+    this.eligibility.maximumAgeYears <
+      this.eligibility.minimumAgeYears
+  ) {
+    this.invalidate(
+      'eligibility.maximumAgeYears',
+      'Maximum age cannot be lower than minimum age',
+    );
+  }
+
   validateEffectiveWindow(
     this,
     'effectiveFrom',
@@ -657,6 +752,19 @@ export const treatmentPackageItemSchema = new Schema(
     },
     overageRateId: nullableBillingObjectId,
     allocationAmount: billingNonNegativeDecimal,
+    included: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    quantityLimit: billingNullableDecimal,
+    amountLimit: billingNullableDecimal,
+    discountPercentage: billingNullableDecimal,
+    requiresAuthorization: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     requiredComponent: {
       type: Boolean,
       required: true,
@@ -682,6 +790,30 @@ treatmentPackageItemSchema.pre('validate', function () {
     'allocationAmount',
     this.allocationAmount,
   );
+
+  if (this.quantityLimit != null) {
+    validatePositiveInventoryDecimal(
+      this,
+      'quantityLimit',
+      this.quantityLimit,
+    );
+  }
+
+  if (this.amountLimit != null) {
+    validateNonNegativeInventoryDecimal(
+      this,
+      'amountLimit',
+      this.amountLimit,
+    );
+  }
+
+  if (this.discountPercentage != null) {
+    validatePercentage(
+      this,
+      'discountPercentage',
+      this.discountPercentage,
+    );
+  }
 });
 
 treatmentPackageItemSchema.index(
@@ -755,6 +887,29 @@ export const packageEnrollmentSchema = new Schema(
       enum: packageEnrollmentStatusValues,
       default: 'ACTIVE',
     },
+    authorizationReference: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 240,
+    },
+    suspendedAt: {
+      type: Date,
+      default: null,
+    },
+    suspendedBy: nullableBillingObjectId,
+    suspensionReason: {
+      type: String,
+      default: null,
+      trim: true,
+      minlength: 5,
+      maxlength: 2_000,
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
+    cancelledBy: nullableBillingObjectId,
     cancellationReason: {
       type: String,
       default: null,
@@ -848,6 +1003,10 @@ export const packageUtilizationSchema = new Schema(
       type: Date,
       default: null,
     },
+    packageAllocatedAmount: billingNonNegativeDecimal,
+    refundId: nullableBillingObjectId,
+    creditNoteId: nullableBillingObjectId,
+    reversedBy: nullableBillingObjectId,
     reversalReason: {
       type: String,
       default: null,

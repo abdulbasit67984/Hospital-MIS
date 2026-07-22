@@ -378,6 +378,34 @@ import {
 } from './payment-operational-history.model.js';
 
 import {
+  diagnosticPanelItemSchema,
+  diagnosticPanelSchema,
+  diagnosticPanelVersionSchema,
+} from './diagnostic-panel.model.js';
+
+import {
+  panelPlanSchema,
+  panelProgramSchema,
+  patientCoverageSchema,
+  patientCoverageVerificationSchema,
+  payerOrganizationSchema,
+  preauthorizationSchema,
+} from './payer-coverage.model.js';
+
+import {
+  coverageBenefitBalanceSchema,
+  coverageDeterminationSchema,
+  coverageOperationalHistorySchema,
+  coverageUtilizationSchema,
+} from './coverage-utilization.model.js';
+
+import {
+  packageEnrollmentBalanceSchema,
+  packageOperationalHistorySchema,
+  treatmentPackageVersionSchema,
+} from './package-coverage-history.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -607,6 +635,27 @@ export const pharmacyDispensingSchemas = {
     dispensationReversalSchema,
   patientReturns: patientReturnSchema,
   patientReturnItems: patientReturnItemSchema,
+} as const;
+
+export const panelsPackagesCoverageSchemas = {
+  diagnosticPanels: diagnosticPanelSchema,
+  diagnosticPanelItems: diagnosticPanelItemSchema,
+  diagnosticPanelVersions: diagnosticPanelVersionSchema,
+  payerOrganizations: payerOrganizationSchema,
+  panelPrograms: panelProgramSchema,
+  panelPlans: panelPlanSchema,
+  patientCoverages: patientCoverageSchema,
+  patientCoverageVerifications:
+    patientCoverageVerificationSchema,
+  preauthorizations: preauthorizationSchema,
+  treatmentPackageVersions: treatmentPackageVersionSchema,
+  packageEnrollmentBalances: packageEnrollmentBalanceSchema,
+  packageOperationalHistories: packageOperationalHistorySchema,
+  coverageDeterminations: coverageDeterminationSchema,
+  coverageBenefitBalances: coverageBenefitBalanceSchema,
+  coverageUtilizations: coverageUtilizationSchema,
+  coverageOperationalHistories:
+    coverageOperationalHistorySchema,
 } as const;
 
 export const billingFoundationSchemas = {
@@ -861,6 +910,15 @@ export function schemaForCollection(
 
   if (billingFoundation !== undefined) {
     return billingFoundation;
+  }
+
+  const panelsPackagesCoverage =
+    panelsPackagesCoverageSchemas[
+      name as keyof typeof panelsPackagesCoverageSchemas
+    ];
+
+  if (panelsPackagesCoverage !== undefined) {
+    return panelsPackagesCoverage;
   }
 
   const critical =
