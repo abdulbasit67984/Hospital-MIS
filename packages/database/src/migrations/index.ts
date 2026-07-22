@@ -133,6 +133,10 @@ import {
   panelsPackagesCoverageFoundation,
 } from './033-panels-packages-coverage-foundation.js';
 
+import {
+  claimsFoundation,
+} from './034-claims-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -167,6 +171,7 @@ export const migrations = [
   paymentCollectionDeposits,
   paymentControlsReconciliation,
   panelsPackagesCoverageFoundation,
+  claimsFoundation,
 ] as const;
 
 export async function runMigrations(
@@ -240,3 +245,4 @@ export * from './030-payments-cashier-shifts-foundation.js';
 export * from './031-payment-collection-deposits.js';
 export * from './032-payment-controls-reconciliation.js';
 export * from './033-panels-packages-coverage-foundation.js';
+export * from './034-claims-foundation.js';

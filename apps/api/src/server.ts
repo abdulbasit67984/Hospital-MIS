@@ -68,6 +68,10 @@ import {
 } from './infrastructure/panels-packages-coverage-infrastructure.js';
 
 import {
+  createClaimsInfrastructure,
+} from './infrastructure/claims-infrastructure.js';
+
+import {
   registerOpenApi,
 } from './infrastructure/openapi.js';
 
@@ -140,6 +144,10 @@ import {
 import {
   createPanelsPackagesCoverageModule,
 } from './modules/panels-packages-coverage/index.js';
+
+import {
+  createClaimsModule,
+} from './modules/claims/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -528,6 +536,20 @@ const panelsPackagesCoverageInfrastructure =
       facilityInfrastructure.crypto,
   });
 
+
+const claimsInfrastructure =
+  createClaimsInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -696,6 +718,19 @@ const panelsPackagesCoverageModule =
       authorizationModule.service,
   });
 
+
+const claimsModule =
+  createClaimsModule({
+    application:
+      claimsInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -785,6 +820,12 @@ const app =
       application.use(
         '/api/v1/panels-packages-coverage',
         panelsPackagesCoverageModule.router,
+      );
+
+
+      application.use(
+        '/api/v1/claims',
+        claimsModule.router,
       );
     },
   });
@@ -1023,12 +1064,26 @@ const recoveryLoops = [
 
     logger,
   }),
+
+  startRecoveryLoop({
+    name:
+      'Claims',
+
+    workerId:
+      `api-claims-recovery:${process.pid}`,
+
+    recovery:
+      claimsInfrastructure.recovery,
+
+    logger,
+  }),
 ];
 
 inventoryInfrastructure.backgroundJobs.start();
 pharmacyDispensingInfrastructure.backgroundJobs.start();
 paymentsCashierShiftsInfrastructure.backgroundJobs.start();
 panelsPackagesCoverageInfrastructure.backgroundJobs.start();
+claimsInfrastructure.backgroundJobs.start();
 
 void dispatchOutboxBatch();
 
@@ -1086,6 +1141,9 @@ httpServer.listen(
         panelsPackagesCoverageModule:
           'mounted',
 
+        claimsModule:
+          'mounted',
+
         transactionRecovery:
           'enabled',
 
@@ -1103,6 +1161,12 @@ httpServer.listen(
 
         panelsPackagesCoverageBackgroundJobs:
           'enabled',
+
+        claimsBackgroundJobs:
+          'enabled-with-report-export-submission-retry-and-dead-letter',
+
+        claimsRecovery:
+          'enabled-with-aging-refresh-and-transaction-evidence-recovery',
 
         panelsPackagesCoverageFinancialControls:
           'enabled-with-maker-checker-billing-refund-audit-outbox-reporting-and-recovery',
@@ -1169,6 +1233,7 @@ async function shutdown(
   pharmacyDispensingInfrastructure.backgroundJobs.stop();
   paymentsCashierShiftsInfrastructure.backgroundJobs.stop();
   panelsPackagesCoverageInfrastructure.backgroundJobs.stop();
+  claimsInfrastructure.backgroundJobs.stop();
 
   clearInterval(
     outboxInterval,

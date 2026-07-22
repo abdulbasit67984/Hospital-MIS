@@ -2,7 +2,6 @@ import mongoose, { Schema } from 'mongoose';
 
 import {
   bedStatuses,
-  claimStatuses,
   invoiceStatuses,
   prescriptionStatuses,
   queueStatuses,
@@ -521,70 +520,6 @@ invoiceSchema.index({
   createdAt: -1,
 });
 
-const claimSchema = baseSchema(
-  {
-    claimNumber: {
-      type: String,
-      required: true,
-      immutable: true,
-    },
-    patientId: {
-      type: objectId,
-      required: true,
-    },
-    invoiceId: {
-      type: objectId,
-      required: true,
-    },
-    payerOrganizationId: {
-      type: objectId,
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: claimStatuses,
-      required: true,
-      default: 'DRAFT',
-    },
-    claimedAmount: {
-      type: decimal128,
-      required: true,
-    },
-    approvedAmount: {
-      type: decimal128,
-      default: '0',
-    },
-    paidAmount: {
-      type: decimal128,
-      default: '0',
-    },
-    currency: {
-      type: String,
-      default: 'PKR',
-    },
-  },
-  {
-    collection: 'claims',
-  },
-);
-
-claimSchema.index(
-  {
-    facilityId: 1,
-    claimNumber: 1,
-  },
-  {
-    unique: true,
-  },
-);
-
-claimSchema.index({
-  facilityId: 1,
-  payerOrganizationId: 1,
-  status: 1,
-  createdAt: -1,
-});
-
 const applicationTransactionSchema = baseSchema(
   {
     transactionId: {
@@ -947,7 +882,6 @@ export const criticalSchemas = {
   stockMovements: stockMovementSchema,
   prescriptions: prescriptionSchema,
   invoices: invoiceSchema,
-  claims: claimSchema,
   applicationTransactions: applicationTransactionSchema,
   applicationTransactionSteps: transactionStepSchema,
   idempotencyKeys: idempotencySchema,

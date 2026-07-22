@@ -406,6 +406,34 @@ import {
 } from './package-coverage-history.model.js';
 
 import {
+  claimDocumentSchema,
+  claimLineSchema,
+  claimSchema,
+  claimValidationSnapshotSchema,
+} from './claims-core.model.js';
+
+import {
+  claimBatchSchema,
+  claimStatusHistorySchema,
+  claimSubmissionSchema,
+  claimVersionHistorySchema,
+  claimWorkItemSchema,
+} from './claims-workflow.model.js';
+
+import {
+  claimAdjudicationSchema,
+  claimAppealSchema,
+  claimDenialSchema,
+} from './claims-adjudication.model.js';
+
+import {
+  claimAdjustmentSchema,
+  claimPaymentSchema,
+  claimRemittanceSchema,
+} from './claims-remittance.model.js';
+
+
+import {
   commonFields,
 } from './common.js';
 
@@ -656,6 +684,24 @@ export const panelsPackagesCoverageSchemas = {
   coverageUtilizations: coverageUtilizationSchema,
   coverageOperationalHistories:
     coverageOperationalHistorySchema,
+} as const;
+
+export const claimsSchemas = {
+  claims: claimSchema,
+  claimLines: claimLineSchema,
+  claimDocuments: claimDocumentSchema,
+  claimValidationSnapshots: claimValidationSnapshotSchema,
+  claimStatusHistories: claimStatusHistorySchema,
+  claimVersionHistories: claimVersionHistorySchema,
+  claimBatches: claimBatchSchema,
+  claimSubmissions: claimSubmissionSchema,
+  claimAdjudications: claimAdjudicationSchema,
+  claimDenials: claimDenialSchema,
+  claimAppeals: claimAppealSchema,
+  claimRemittances: claimRemittanceSchema,
+  claimPayments: claimPaymentSchema,
+  claimAdjustments: claimAdjustmentSchema,
+  claimWorkItems: claimWorkItemSchema,
 } as const;
 
 export const billingFoundationSchemas = {
@@ -919,6 +965,15 @@ export function schemaForCollection(
 
   if (panelsPackagesCoverage !== undefined) {
     return panelsPackagesCoverage;
+  }
+
+  const claims =
+    claimsSchemas[
+      name as keyof typeof claimsSchemas
+    ];
+
+  if (claims !== undefined) {
+    return claims;
   }
 
   const critical =

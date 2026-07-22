@@ -270,10 +270,40 @@ export const permissionKeys = [
   'preauthorizations.manage',
 
   'claims.read',
+  'claims.read_sensitive',
   'claims.prepare',
+  'claims.update',
+  'claims.validate',
+  'claims.mark_ready',
+  'claims.batches.manage',
+  'claims.submission.request',
+  'claims.submission.approve',
   'claims.submit',
   'claims.status_manage',
+  'claims.acknowledgements.record',
+  'claims.adjudications.record',
+  'claims.remittances.import',
   'claims.payment_record',
+  'claims.payments.match',
+  'claims.adjustments.request',
+  'claims.adjustments.approve',
+  'claims.write_off.request',
+  'claims.write_off.approve',
+  'claims.denials.manage',
+  'claims.appeals.prepare',
+  'claims.appeals.approve',
+  'claims.appeals.submit',
+  'claims.assign',
+  'claims.escalate',
+  'claims.cancel.request',
+  'claims.cancel.approve',
+  'claims.reverse.request',
+  'claims.reverse.approve',
+  'claims.void.request',
+  'claims.void.approve',
+  'claims.recovery.manage',
+  'claims.reports.read',
+  'claims.reports.export',
 
   'assistance.read',
   'assistance.apply',
@@ -499,6 +529,30 @@ function sensitivityFor(
       'coverage.activate' ||
     key ===
       'coverage.override' ||
+    key ===
+      'claims.read_sensitive' ||
+    key ===
+      'claims.submission.approve' ||
+    key ===
+      'claims.adjudications.record' ||
+    key ===
+      'claims.remittances.import' ||
+    key ===
+      'claims.payments.match' ||
+    key ===
+      'claims.adjustments.approve' ||
+    key ===
+      'claims.write_off.approve' ||
+    key ===
+      'claims.appeals.approve' ||
+    key ===
+      'claims.cancel.approve' ||
+    key ===
+      'claims.reverse.approve' ||
+    key ===
+      'claims.void.approve' ||
+    key ===
+      'claims.recovery.manage' ||
     key ===
       'assistance.approve' ||
     key ===
