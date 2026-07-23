@@ -74,6 +74,7 @@ import {
 import {
   createWelfareZakatInfrastructure,
 } from './infrastructure/welfare-zakat-infrastructure.js';
+import { createConsultantSharingInfrastructure } from './infrastructure/consultant-sharing-infrastructure.js';
 
 import {
   registerOpenApi,
@@ -156,6 +157,7 @@ import {
 import {
   createWelfareZakatModule,
 } from './modules/welfare-zakat/index.js';
+import { createConsultantSharingModule } from './modules/consultant-sharing/index.js';
 
 import {
   createRegistrationQueueModule,
@@ -572,6 +574,39 @@ const welfareZakatInfrastructure =
       facilityInfrastructure.crypto,
   });
 
+const consultantSharingInfrastructure =
+  createConsultantSharingInfrastructure({
+    database,
+
+    auditRepository:
+      auditModule.repository,
+
+    operationalInfrastructure,
+
+    snapshotCrypto:
+      facilityInfrastructure.crypto,
+
+    ledgerConfiguration: {
+      hospitalRevenueAccountCode:
+        'HOSPITAL_SERVICE_REVENUE',
+
+      consultantLiabilityAccountCode:
+        'CONSULTANT_PAYABLE',
+
+      consultantSettlementClearingAccountCode:
+        'CONSULTANT_SETTLEMENT_CLEARING',
+
+      consultantPayoutClearingAccountCode:
+        'CONSULTANT_PAYOUT_CLEARING',
+
+      consultantTaxWithholdingAccountCode:
+        'CONSULTANT_TAX_WITHHOLDING',
+
+      consultantDeductionClearingAccountCode:
+        'CONSULTANT_DEDUCTION_CLEARING',
+    },
+  });
+
 const authenticationModule =
   createAuthenticationModule({
     database,
@@ -766,6 +801,21 @@ const welfareZakatModule =
       authorizationModule.service,
   });
 
+const consultantSharingModule =
+  createConsultantSharingModule({
+    application:
+      consultantSharingInfrastructure.application,
+
+    authenticationService:
+      authenticationModule.service,
+
+    authorizationService:
+      authorizationModule.service,
+
+    actorIdentityResolver:
+      consultantSharingInfrastructure.actorIdentityResolver,
+  });
+
 const readinessProbe =
   createReadinessProbe(
     config,
@@ -867,6 +917,11 @@ const app =
       application.use(
         '/api/v1/welfare-zakat',
         welfareZakatModule.router,
+      );
+
+      application.use(
+        '/api/v1/consultant-sharing',
+        consultantSharingModule.router,
       );
     },
   });
@@ -1139,6 +1194,7 @@ paymentsCashierShiftsInfrastructure.backgroundJobs.start();
 panelsPackagesCoverageInfrastructure.backgroundJobs.start();
 claimsInfrastructure.backgroundJobs.start();
 welfareZakatInfrastructure.backgroundJobs.start();
+consultantSharingInfrastructure.backgroundJobs.start();
 
 void dispatchOutboxBatch();
 
@@ -1265,11 +1321,20 @@ httpServer.listen(
         welfareZakatModule:
           'mounted-with-funds-applications-approvals-allocations-transfers-reports-and-recovery',
 
+        consultantSharingModule:
+          'mounted-with-agreements-revenue-settlements-payouts-disputes-reports-recovery-and-reconciliation',
+
         welfareZakatBackgroundJobs:
           'enabled-with-expiry-reconciliation-and-report-exports',
 
         welfareZakatRecovery:
           'enabled-with-evidence-based-transaction-recovery',
+
+        consultantSharingBackgroundJobs:
+          'enabled-with-recognition-recalculation-settlement-report-expiry-and-reconciliation-jobs',
+
+        consultantSharingRecovery:
+          'enabled-with-idempotent-calculation-and-transaction-evidence-recovery',
       },
 
       'Hospital MIS API started',
@@ -1299,6 +1364,7 @@ async function shutdown(
   panelsPackagesCoverageInfrastructure.backgroundJobs.stop();
   claimsInfrastructure.backgroundJobs.stop();
   welfareZakatInfrastructure.backgroundJobs.stop();
+  consultantSharingInfrastructure.backgroundJobs.stop();
 
   clearInterval(
     outboxInterval,

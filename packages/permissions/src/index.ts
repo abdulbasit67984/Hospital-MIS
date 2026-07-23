@@ -353,8 +353,48 @@ export const permissionKeys = [
   'welfare_zakat.reports.export',
 
   'consultants.read',
-  'consultants.agreements.manage',
-  'consultants.settlements.manage',
+  'consultants.read_sensitive',
+  'consultants.agreements.create',
+  'consultants.agreements.update',
+  'consultants.agreements.amend',
+  'consultants.agreements.submit',
+  'consultants.agreements.review',
+  'consultants.agreements.approve',
+  'consultants.agreements.activate',
+  'consultants.agreements.suspend',
+  'consultants.agreements.terminate',
+  'consultants.agreements.reopen',
+  'consultants.revenue.read',
+  'consultants.revenue.calculate',
+  'consultants.revenue.recalculate',
+  'consultants.revenue.hold',
+  'consultants.revenue.release',
+  'consultants.revenue.manual.request',
+  'consultants.revenue.manual.approve',
+  'consultants.adjustments.request',
+  'consultants.adjustments.approve',
+  'consultants.reversals.request',
+  'consultants.reversals.approve',
+  'consultants.settlements.read',
+  'consultants.settlements.create',
+  'consultants.settlements.review',
+  'consultants.settlements.calculate',
+  'consultants.settlements.submit',
+  'consultants.settlements.approve',
+  'consultants.settlements.cancel',
+  'consultants.settlements.reverse',
+  'consultants.payouts.request',
+  'consultants.payouts.approve',
+  'consultants.payouts.reverse',
+  'consultants.disputes.create',
+  'consultants.disputes.review',
+  'consultants.disputes.resolve',
+  'consultants.assign',
+  'consultants.escalate',
+  'consultants.reconcile',
+  'consultants.recovery.manage',
+  'consultants.reports.read',
+  'consultants.reports.export',
 
   'reports.operational.read',
   'reports.clinical.read',
@@ -643,7 +683,22 @@ function sensitivityFor(
     key ===
       'configuration.manage_global' ||
     key ===
-      'configuration.manage_sensitive'
+      'configuration.manage_sensitive' ||
+    key === 'consultants.agreements.approve' ||
+    key === 'consultants.agreements.activate' ||
+    key === 'consultants.agreements.suspend' ||
+    key === 'consultants.agreements.terminate' ||
+    key === 'consultants.revenue.manual.approve' ||
+    key === 'consultants.adjustments.approve' ||
+    key === 'consultants.reversals.approve' ||
+    key === 'consultants.settlements.approve' ||
+    key === 'consultants.settlements.cancel' ||
+    key === 'consultants.settlements.reverse' ||
+    key === 'consultants.payouts.approve' ||
+    key === 'consultants.payouts.reverse' ||
+    key === 'consultants.disputes.resolve' ||
+    key === 'consultants.reconcile' ||
+    key === 'consultants.recovery.manage'
   ) {
     return 'HIGHLY_SENSITIVE';
   }
@@ -675,6 +730,9 @@ function sensitivityFor(
     ) ||
     key.startsWith(
       'welfare_zakat.',
+    ) ||
+    key.startsWith(
+      'consultants.',
     ) ||
     key.startsWith(
       'clinical_notes.',

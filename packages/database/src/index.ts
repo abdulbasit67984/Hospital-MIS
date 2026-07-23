@@ -255,3 +255,10 @@ export * from './models/assistance-application.model.js';
 export * from './models/assistance-approval.model.js';
 export * from './models/assistance-allocation.model.js';
 export * from './models/assistance-work-item.model.js';
+
+export * from './models/consultant-sharing.types.js';
+export * from './models/consultant-sharing-schema-helpers.js';
+export * from './models/consultant-agreement.model.js';
+export * from './models/consultant-revenue.model.js';
+export * from './models/consultant-settlement.model.js';
+export * from './models/consultant-dispute.model.js';

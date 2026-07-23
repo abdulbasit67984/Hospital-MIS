@@ -141,6 +141,10 @@ import {
   welfareZakatFoundation,
 } from './035-welfare-zakat-foundation.js';
 
+import {
+  consultantSharingFoundation,
+} from './036-consultant-sharing-foundation.js';
+
 export const migrations = [
   initializeDatabase,
   authenticationFoundation,
@@ -177,6 +181,7 @@ export const migrations = [
   panelsPackagesCoverageFoundation,
   claimsFoundation,
   welfareZakatFoundation,
+  consultantSharingFoundation,
 ] as const;
 
 export async function runMigrations(
@@ -252,3 +257,4 @@ export * from './032-payment-controls-reconciliation.js';
 export * from './033-panels-packages-coverage-foundation.js';
 export * from './034-claims-foundation.js';
 export * from './035-welfare-zakat-foundation.js';
+export * from './036-consultant-sharing-foundation.js';

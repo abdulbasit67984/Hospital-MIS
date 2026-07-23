@@ -462,6 +462,33 @@ import {
 } from './assistance-work-item.model.js';
 
 import {
+  consultantAgreementHistorySchema,
+  consultantAgreementRuleHistorySchema,
+  consultantAgreementRuleSchema,
+  consultantAgreementSchema,
+} from './consultant-agreement.model.js';
+
+import {
+  consultantCalculationRunSchema,
+  consultantRevenueAdjustmentSchema,
+  consultantRevenueEntrySchema,
+  consultantRevenueParticipantSchema,
+  consultantRevenueReversalSchema,
+} from './consultant-revenue.model.js';
+
+import {
+  consultantSettlementItemSchema,
+  consultantSettlementPaymentSchema,
+  consultantSettlementSchema,
+} from './consultant-settlement.model.js';
+
+import {
+  consultantDisputeHistorySchema,
+  consultantDisputeSchema,
+  consultantWorkItemSchema,
+} from './consultant-dispute.model.js';
+
+import {
   commonFields,
 } from './common.js';
 
@@ -752,6 +779,30 @@ export const welfareZakatSchemas = {
   assistanceWorkItems: assistanceWorkItemSchema,
 } as const;
 
+export const consultantSharingSchemas = {
+  consultantAgreements: consultantAgreementSchema,
+  consultantAgreementRules: consultantAgreementRuleSchema,
+  consultantAgreementHistories: consultantAgreementHistorySchema,
+  consultantAgreementRuleHistories:
+    consultantAgreementRuleHistorySchema,
+  consultantCalculationRuns: consultantCalculationRunSchema,
+  consultantRevenueEntries: consultantRevenueEntrySchema,
+  consultantRevenueParticipants:
+    consultantRevenueParticipantSchema,
+  consultantRevenueAdjustments:
+    consultantRevenueAdjustmentSchema,
+  consultantRevenueReversals:
+    consultantRevenueReversalSchema,
+  consultantSettlements: consultantSettlementSchema,
+  consultantSettlementItems: consultantSettlementItemSchema,
+  consultantSettlementPayments:
+    consultantSettlementPaymentSchema,
+  consultantDisputes: consultantDisputeSchema,
+  consultantDisputeHistories:
+    consultantDisputeHistorySchema,
+  consultantWorkItems: consultantWorkItemSchema,
+} as const;
+
 export const billingFoundationSchemas = {
   chargeCategories: chargeCategorySchema,
   taxCategories: taxCategorySchema,
@@ -1031,6 +1082,15 @@ export function schemaForCollection(
 
   if (welfareZakat !== undefined) {
     return welfareZakat;
+  }
+
+  const consultantSharing =
+    consultantSharingSchemas[
+      name as keyof typeof consultantSharingSchemas
+    ];
+
+  if (consultantSharing !== undefined) {
+    return consultantSharing;
   }
 
   const critical =
